@@ -23,6 +23,26 @@
   --font-body: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
+:root {
+  --color-bg-ivory: #f5f0e8;
+  --color-bg-white: #FFFFFF;
+  --color-bg-panel: #F5F3EE;
+  --color-text-main: #1C1C1C;
+  --color-text-muted: #717171;
+  --color-text-secondary: #999;
+  --color-gold-accent: #C9A227;
+  --color-gold-hover: #B8931F;
+  --color-border: #E6E4DF;
+  --color-border-light: #F0EEEA;
+  --color-error: #DC3545;
+  --color-success: #0D9668;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md: 0 2px 8px rgba(0,0,0,0.06);
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -37,7 +57,7 @@ html, body, #root {
 body {
   font-family: var(--font-body);
   font-size: 13px;
-  background-color: var(--color-ivory);
+  background-color: var(--color-bg-ivory);
   color: var(--color-text-main);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -58,7 +78,7 @@ a {
 
 /* Focus ring */
 *:focus-visible {
-  outline: 2px solid var(--color-gold);
+  outline: 2px solid var(--color-gold-accent);
   outline-offset: 2px;
 }
 
@@ -84,7 +104,7 @@ a {
   width: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: var(--color-ivory);
+  background: var(--color-bg-ivory);
 }
 ::-webkit-scrollbar-thumb {
   background: var(--color-border);
