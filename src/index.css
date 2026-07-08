@@ -1,33 +1,32 @@
 @import "tailwindcss";
 
 @theme {
-  --color-ivory: #FFFFF0;
-  --color-ivory-warm: #F7F5E8;
-  --color-slate: #1a1a2e;
-  --color-slate-soft: #2a2a3e;
-  --color-slate-muted: #6a6a7e;
-  --color-slate-line: #d8d8c8;
-  --color-gold: #C9A84C;
-  --color-gold-dim: #a68d3d;
-  --color-live-red: #c53030;
-  --color-success: #2f855a;
+  --color-ivory: #f5f0e8;
+  --color-white: #FFFFFF;
+  --color-panel: #F5F3EE;
 
-  --font-display: "Fraunces", "Georgia", serif;
-  --font-body: "Inter", -apple-system, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  --color-text-main: #1C1C1C;
+  --color-text-muted: #717171;
+  --color-text-secondary: #999;
 
-  --text-xs: 11px;
-  --text-sm: 13px;
-  --text-base: 15px;
-  --text-lg: 18px;
-  --text-xl: 24px;
-  --text-2xl: 36px;
+  --color-gold: #C9A227;
+  --color-gold-light: #F4EEDF;
+  --color-gold-hover: #B8931F;
+
+  --color-border: #E6E4DF;
+  --color-border-light: #F0EEEA;
+  --color-error: #DC3545;
+  --color-success: #0D9668;
+
+  --color-live-red: #DC3545;
+
+  --font-body: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 * {
+  box-sizing: border-box;
   margin: 0;
   padding: 0;
-  box-sizing: border-box;
 }
 
 html, body, #root {
@@ -37,10 +36,9 @@ html, body, #root {
 
 body {
   font-family: var(--font-body);
-  font-size: var(--text-base);
-  line-height: 1.6;
-  color: var(--color-slate);
+  font-size: 13px;
   background-color: var(--color-ivory);
+  color: var(--color-text-main);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -89,6 +87,6 @@ a {
   background: var(--color-ivory);
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--color-slate-line);
+  background: var(--color-border);
   border-radius: 3px;
 }

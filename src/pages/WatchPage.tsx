@@ -10,7 +10,7 @@ function LiveDot() {
   return (
     <span className="inline-flex items-center gap-1.5">
       <span className="w-2 h-2 rounded-full bg-live-red animate-pulse-live" aria-label="Live" />
-      <span className="font-display text-live-red text-xs uppercase tracking-[0.12em]">LIVE</span>
+      <span className="text-live-red text-[11px] font-semibold uppercase tracking-wide">LIVE</span>
     </span>
   );
 }
@@ -75,7 +75,6 @@ export default function WatchPage() {
   const teardownAgora = useCallback(async () => {
     if (agoraClientRef.current) {
       try {
-        // Stop any local tracks
         if (videoTracksRef.current.video) {
           videoTracksRef.current.video.stop();
           videoTracksRef.current.video.close();
@@ -129,7 +128,6 @@ export default function WatchPage() {
 
     inactivityTimerRef.current = setTimeout(() => {
       setShowInactivityModal(true);
-      // After 30 more seconds of no click, disconnect
       let countdown = 30;
       inactivityCountdownRef.current = setInterval(() => {
         countdown -= 1;
@@ -137,7 +135,7 @@ export default function WatchPage() {
           navigateToDashboard('inactivity_timeout');
         }
       }, 1000);
-    }, 180_000); // 3 minutes
+    }, 180_000);
   }, [navigateToDashboard]);
 
   // --- Hard cap (15 min) ---
@@ -156,7 +154,7 @@ export default function WatchPage() {
           navigateToDashboard('hard_cap');
         }
       }, 1000);
-    }, 870_000); // 14:30
+    }, 870_000);
   }, [navigateToDashboard]);
 
   // --- Heartbeat (15s while watching) ---
@@ -183,7 +181,6 @@ export default function WatchPage() {
           const token = sessionTokenRef.current;
           if (!token) return;
 
-          // Get new log
           const { data: newLog, error: logErr } = await supabase.rpc('compound_request_stream_token', {
             p_session_token: token,
             p_session_id: sessionId,
@@ -191,7 +188,6 @@ export default function WatchPage() {
           if (logErr) throw logErr;
           const newLogData = newLog as StreamTokenLog;
 
-          // Get signed token from edge function
           const {
             data: { session },
           } = await supabase.auth.getSession();
@@ -211,19 +207,17 @@ export default function WatchPage() {
           if (!res.ok) throw new Error('Token fetch failed');
           const tokenData: StreamTokenResponse = await res.json();
 
-          // Renew Agora token
           if (agoraClientRef.current) {
             await agoraClientRef.current.renewToken(tokenData.token);
           }
 
           logIdRef.current = newLogData.log_id;
 
-          // Schedule next refresh
           scheduleTokenRefresh(appChannelInfo);
         } catch {
           navigateToDashboard('token_refresh_failed');
         }
-      }, 480_000); // 8 minutes
+      }, 480_000);
     },
     [navigateToDashboard, sessionId],
   );
@@ -266,7 +260,6 @@ export default function WatchPage() {
       try {
         setPlayerState('loading');
 
-        // 1. Request token log
         const { data: log, error: logErr } = await supabase.rpc('compound_request_stream_token', {
           p_session_token: sessionToken!,
           p_session_id: sessionId!,
@@ -275,7 +268,6 @@ export default function WatchPage() {
         const logData = log as StreamTokenLog;
         logIdRef.current = logData.log_id;
 
-        // 2. Get signed token from edge function
         const {
           data: { session },
         } = await supabase.auth.getSession();
@@ -314,7 +306,6 @@ export default function WatchPage() {
 
         if (cancelled) return;
 
-        // 3. Initialize Agora client
         const client = AgoraRTC.createClient({ mode: 'live', codec: 'vp8', role: 'audience' });
         await client.setClientRole('audience');
         await client.join(tokenData.app_id, tokenData.channel_name, tokenData.token, tokenData.uid);
@@ -326,7 +317,6 @@ export default function WatchPage() {
 
         agoraClientRef.current = client;
 
-        // 4. Subscribe to remote tracks
         client.on('user-published', async (user, mediaType) => {
           await client.subscribe(user, mediaType);
           if (cancelled) return;
@@ -341,7 +331,6 @@ export default function WatchPage() {
         });
 
         client.on('user-unpublished', () => {
-          // Wait 5s to see if user comes back
           setTimeout(() => {
             if (client.remoteUsers.length === 0 && !cancelled) {
               navigateToDashboard('session_ended_by_agent');
@@ -349,19 +338,17 @@ export default function WatchPage() {
           }, 5000);
         });
 
-        // Start all timers
         startHeartbeat();
         scheduleTokenRefresh({ channel_name: tokenData.channel_name });
         startHardCapTimer();
         showOverlayTemporarily();
 
-        // Elapsed time updater
         const elapsedInterval = setInterval(() => {
           setElapsedMinutes((prev) => prev + 1);
         }, 60_000);
 
         return () => clearInterval(elapsedInterval);
-      } catch (err) {
+      } catch {
         if (!cancelled) {
           setPlayerState('error');
           setErrorMessage('Something went wrong. Try again or return to dashboard.');
@@ -388,19 +375,16 @@ export default function WatchPage() {
     showOverlayTemporarily,
   ]);
 
-  // --- Handle keep watching (inactivity) ---
   const handleContinueWatching = () => {
     setShowInactivityModal(false);
     resetInactivityTimer();
   };
 
-  // --- Handle keep watching (hard cap) ---
   const handleKeepWatching = async () => {
     setShowHardCapToast(false);
     if (hardCapCountdownRef.current) clearInterval(hardCapCountdownRef.current);
     if (hardCapTimerRef.current) clearTimeout(hardCapTimerRef.current);
 
-    // Request fresh token + restart 15 min timer
     try {
       const token = sessionTokenRef.current;
       if (!token || !sessionId) return;
@@ -441,14 +425,12 @@ export default function WatchPage() {
     }
   };
 
-  // --- Render based on state ---
-
   if (playerState === 'loading') {
     return (
-      <div className="fixed inset-0 bg-black flex items-center justify-center">
+      <div className="fixed inset-0 bg-[#1C1C1C] flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
           <span className="w-3 h-3 rounded-full bg-gold animate-pulse-live" />
-          <span className="font-display text-ivory-warm text-base">Connecting to live stream...</span>
+          <span className="text-white/90 text-[13px]">Connecting to live stream...</span>
         </div>
       </div>
     );
@@ -456,12 +438,12 @@ export default function WatchPage() {
 
   if (playerState === 'ended' || playerState === 'error') {
     return (
-      <div className="fixed inset-0 bg-black flex items-center justify-center">
+      <div className="fixed inset-0 bg-[#1C1C1C] flex items-center justify-center">
         <div className="text-center">
-          <p className="font-display text-ivory-warm text-xl mb-6">{errorMessage}</p>
+          <p className="text-white/90 text-[15px] font-medium mb-6">{errorMessage}</p>
           <button
             onClick={() => navigate('/dashboard')}
-            className="px-6 py-2.5 bg-gold text-slate text-sm uppercase tracking-[0.08em] font-medium rounded-sm hover:bg-gold-dim transition-colors"
+            className="px-6 py-2.5 bg-gold text-white text-[13px] font-semibold rounded-[6px] hover:bg-gold-hover transition-colors"
           >
             Back to dashboard
           </button>
@@ -470,9 +452,8 @@ export default function WatchPage() {
     );
   }
 
-  // Streaming state
   return (
-    <div className="fixed inset-0 bg-black">
+    <div className="fixed inset-0 bg-[#1C1C1C]">
       {/* Video container */}
       <div ref={videoContainerRef} className="absolute inset-0" />
 
@@ -484,14 +465,14 @@ export default function WatchPage() {
       >
         <div className="flex items-center gap-3">
           <LiveDot />
-          <span className="font-display text-ivory text-sm">
+          <span className="text-white text-[13px]">
             Session #{sessionId?.slice(0, 8)}
           </span>
-          <span className="font-mono text-ivory-warm text-sm">{elapsedMinutes}m</span>
+          <span className="text-white/70 text-[12px]">{elapsedMinutes}m</span>
         </div>
         <button
           onClick={() => navigateToDashboard('user_close')}
-          className="w-10 h-10 flex items-center justify-center text-ivory hover:text-gold transition-colors"
+          className="w-10 h-10 flex items-center justify-center text-white hover:text-gold transition-colors"
           aria-label="Close"
         >
           <X size={20} />
@@ -504,7 +485,7 @@ export default function WatchPage() {
           overlayVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}
       >
-        <span className="text-ivory-warm/60 text-xs">
+        <span className="text-white/50 text-[11px]">
           Enaya Compound Portal — {compound?.name}
         </span>
       </div>
@@ -512,11 +493,11 @@ export default function WatchPage() {
       {/* Inactivity modal */}
       {showInactivityModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80">
-          <div className="bg-slate-soft p-8 rounded-sm text-center max-w-sm">
-            <p className="font-display text-ivory text-xl mb-4">Still watching?</p>
+          <div className="bg-white p-8 rounded-[10px] text-center max-w-sm shadow-lg">
+            <p className="text-text-main text-[15px] font-semibold mb-4">Still watching?</p>
             <button
               onClick={handleContinueWatching}
-              className="px-6 py-2.5 bg-gold text-slate text-sm uppercase tracking-[0.08em] font-medium rounded-sm hover:bg-gold-dim transition-colors"
+              className="px-6 py-2.5 bg-gold text-white text-[13px] font-semibold rounded-[6px] hover:bg-gold-hover transition-colors"
             >
               Continue watching
             </button>
@@ -526,19 +507,19 @@ export default function WatchPage() {
 
       {/* Hard cap toast */}
       {showHardCapToast && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-slate-soft px-6 py-4 rounded-sm flex items-center gap-4">
-          <span className="text-ivory-warm text-sm">
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-white px-6 py-4 rounded-[8px] flex items-center gap-4 shadow-lg border border-border">
+          <span className="text-text-main text-[13px]">
             Session will disconnect in {hardCapCountdown}s.
           </span>
           <button
             onClick={handleKeepWatching}
-            className="px-4 py-1.5 bg-gold text-slate text-xs uppercase tracking-[0.08em] font-medium rounded-sm hover:bg-gold-dim transition-colors"
+            className="px-4 py-1.5 bg-gold text-white text-[12px] font-semibold rounded-[6px] hover:bg-gold-hover transition-colors"
           >
             Keep watching
           </button>
           <button
             onClick={() => navigateToDashboard('hard_cap')}
-            className="text-ivory-warm/60 text-xs hover:text-ivory transition-colors"
+            className="text-text-muted text-[12px] hover:text-text-main transition-colors"
           >
             Close
           </button>

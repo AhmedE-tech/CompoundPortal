@@ -38,9 +38,7 @@ function LiveDot() {
   return (
     <span className="inline-flex items-center gap-1.5">
       <span className="w-2 h-2 rounded-full bg-live-red animate-pulse-live" aria-label="Live" />
-      <span className="font-display text-live-red text-xs uppercase tracking-[0.12em]">
-        LIVE
-      </span>
+      <span className="text-live-red text-[11px] font-semibold uppercase tracking-wide">LIVE</span>
     </span>
   );
 }
@@ -49,7 +47,7 @@ function SessionTile({ tile, onClick }: { tile: LiveSessionTile; onClick: () => 
   return (
     <button
       onClick={onClick}
-      className="group relative aspect-video bg-slate rounded-sm border-2 border-transparent hover:border-gold transition-colors cursor-pointer overflow-hidden"
+      className="group relative aspect-video bg-[#1C1C1C] rounded-[8px] border-2 border-transparent hover:border-gold transition-colors cursor-pointer overflow-hidden shadow-sm"
     >
       {/* Top left: live indicator */}
       <div className="absolute top-3 left-3">
@@ -58,17 +56,17 @@ function SessionTile({ tile, onClick }: { tile: LiveSessionTile; onClick: () => 
 
       {/* Center: watch prompt (hover) */}
       <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-        <span className="font-display text-ivory-warm text-base">Watch</span>
+        <span className="text-white/90 text-[13px] font-medium">Watch</span>
       </div>
 
       {/* Bottom left: session label */}
       <div className="absolute bottom-3 left-3">
-        <span className="font-mono text-ivory text-base">{tile.display_label}</span>
+        <span className="text-white text-[13px] font-medium">{tile.display_label}</span>
       </div>
 
       {/* Bottom right: elapsed time */}
       <div className="absolute bottom-3 right-3">
-        <span className="font-mono text-ivory-warm text-sm">{tile.started_ago_minutes}m</span>
+        <span className="text-white/70 text-[12px]">{tile.started_ago_minutes}m</span>
       </div>
     </button>
   );
@@ -124,20 +122,20 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-ivory flex flex-col">
       {/* Header */}
-      <header className="sticky top-0 z-10 bg-ivory border-b border-slate-line">
-        <div className="flex items-center justify-between h-14 px-6">
+      <header className="sticky top-0 z-10 bg-white border-b border-border">
+        <div className="flex items-center justify-between h-16 px-6">
           <div className="flex items-center gap-3">
-            <span className="font-display text-gold text-lg tracking-wide">Enaya</span>
-            <span className="text-slate-line">·</span>
-            <span className="text-slate text-sm">{compound?.name}</span>
-            <span className="font-mono text-slate-muted text-xs">{compound?.code}</span>
+            <span className="text-gold text-[15px] font-bold tracking-wide">Enaya</span>
+            <span className="text-border">·</span>
+            <span className="text-text-main text-[13px]">{compound?.name}</span>
+            <span className="text-text-muted text-[11px]">{compound?.code}</span>
           </div>
 
           <div className="flex items-center gap-4">
-            <span className="font-mono text-slate-muted text-sm">{cairoTime}</span>
+            <span className="text-text-muted text-[12px] font-medium">{cairoTime}</span>
             <button
               onClick={logout}
-              className="flex items-center gap-1.5 text-slate-muted text-sm hover:text-slate transition-colors"
+              className="flex items-center gap-1.5 text-text-muted text-[13px] hover:text-text-main transition-colors"
             >
               <LogOut size={14} />
               Logout
@@ -147,15 +145,15 @@ export default function DashboardPage() {
       </header>
 
       {/* Top strip */}
-      <div className="bg-gold-dim/10 border-b border-slate-line">
+      <div className="bg-gold-light border-b border-border">
         <div className="flex items-center justify-between h-8 px-6">
           <div className="flex items-center gap-2">
-            <span className="font-mono text-sm text-slate">{liveCount}</span>
-            <span className="text-xs text-slate-muted">sessions in progress</span>
+            <span className="text-[13px] font-semibold text-text-main">{liveCount}</span>
+            <span className="text-[12px] text-text-muted">sessions in progress</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-xs text-slate-muted">today's completed:</span>
-            <span className="font-mono text-sm text-slate">{completedCount}</span>
+            <span className="text-[12px] text-text-muted">today's completed:</span>
+            <span className="text-[13px] font-semibold text-text-main">{completedCount}</span>
           </div>
         </div>
       </div>
@@ -164,13 +162,13 @@ export default function DashboardPage() {
       <main className="flex-1 p-8">
         {loading ? (
           <div className="flex items-center justify-center h-64">
-            <span className="font-display text-slate-muted text-base">Loading...</span>
+            <span className="text-text-muted text-[13px]">Loading...</span>
           </div>
         ) : liveCount === 0 ? (
           <div className="flex flex-col items-center justify-center h-64" role="status">
-            <span className="font-mono text-7xl text-slate-line">0</span>
-            <span className="text-slate-muted text-sm mt-3">no sessions in progress right now</span>
-            <span className="text-slate-muted text-xs mt-2">The page will refresh automatically.</span>
+            <span className="text-[72px] font-semibold text-border leading-none">0</span>
+            <span className="text-text-muted text-[13px] mt-3">no sessions in progress right now</span>
+            <span className="text-text-secondary text-[11px] mt-2">The page will refresh automatically.</span>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
