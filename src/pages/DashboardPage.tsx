@@ -1,0 +1,189 @@
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { LogOut } from 'lucide-react';
+import { supabase } from '../lib/supabase';
+import { useAuth } from '../contexts/AuthContext';
+import type { LiveSessionTile, LiveSessionsResponse } from '../types';
+
+function useCairoTime(): string {
+  const [time, setTime] = useState(() =>
+    new Date().toLocaleTimeString('en-US', {
+      timeZone: 'Africa/Cairo',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false,
+    }),
+  );
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      setTime(
+        new Date().toLocaleTimeString('en-US', {
+          timeZone: 'Africa/Cairo',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: false,
+        }),
+      );
+    }, 1000);
+    return () => clearInterval(id);
+  }, []);
+
+  return time;
+}
+
+function LiveDot() {
+  return (
+    <span className="inline-flex items-center gap-1.5">
+      <span className="w-2 h-2 rounded-full bg-live-red animate-pulse-live" aria-label="Live" />
+      <span className="font-display text-live-red text-xs uppercase tracking-[0.12em]">
+        LIVE
+      </span>
+    </span>
+  );
+}
+
+function SessionTile({ tile, onClick }: { tile: LiveSessionTile; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      className="group relative aspect-video bg-slate rounded-sm border-2 border-transparent hover:border-gold transition-colors cursor-pointer overflow-hidden"
+    >
+      {/* Top left: live indicator */}
+      <div className="absolute top-3 left-3">
+        <LiveDot />
+      </div>
+
+      {/* Center: watch prompt (hover) */}
+      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+        <span className="font-display text-ivory-warm text-base">Watch</span>
+      </div>
+
+      {/* Bottom left: session label */}
+      <div className="absolute bottom-3 left-3">
+        <span className="font-mono text-ivory text-base">{tile.display_label}</span>
+      </div>
+
+      {/* Bottom right: elapsed time */}
+      <div className="absolute bottom-3 right-3">
+        <span className="font-mono text-ivory-warm text-sm">{tile.started_ago_minutes}m</span>
+      </div>
+    </button>
+  );
+}
+
+export default function DashboardPage() {
+  const { sessionToken, compound, logout } = useAuth();
+  const navigate = useNavigate();
+  const cairoTime = useCairoTime();
+
+  const [tiles, setTiles] = useState<LiveSessionTile[]>([]);
+  const [completedCount, setCompletedCount] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const fetchSessions = useCallback(async () => {
+    if (!sessionToken) return;
+    try {
+      const { data, error } = await supabase.rpc('compound_get_live_sessions', {
+        p_session_token: sessionToken,
+      });
+      if (error) throw error;
+      const response = data as LiveSessionsResponse;
+      setTiles(response.tiles ?? []);
+      setCompletedCount(response.todays_completed_count ?? 0);
+    } catch {
+      // Silent fail — polling will retry
+    } finally {
+      setLoading(false);
+    }
+  }, [sessionToken]);
+
+  // Initial fetch + polling
+  useEffect(() => {
+    fetchSessions();
+    pollingRef.current = setInterval(fetchSessions, 15_000);
+    return () => {
+      if (pollingRef.current) clearInterval(pollingRef.current);
+    };
+  }, [fetchSessions]);
+
+  // Refetch on visibility change
+  useEffect(() => {
+    const onVisibilityChange = () => {
+      if (!document.hidden) fetchSessions();
+    };
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', onVisibilityChange);
+  }, [fetchSessions]);
+
+  const liveCount = tiles.length;
+
+  return (
+    <div className="min-h-screen bg-ivory flex flex-col">
+      {/* Header */}
+      <header className="sticky top-0 z-10 bg-ivory border-b border-slate-line">
+        <div className="flex items-center justify-between h-14 px-6">
+          <div className="flex items-center gap-3">
+            <span className="font-display text-gold text-lg tracking-wide">Enaya</span>
+            <span className="text-slate-line">·</span>
+            <span className="text-slate text-sm">{compound?.name}</span>
+            <span className="font-mono text-slate-muted text-xs">{compound?.code}</span>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <span className="font-mono text-slate-muted text-sm">{cairoTime}</span>
+            <button
+              onClick={logout}
+              className="flex items-center gap-1.5 text-slate-muted text-sm hover:text-slate transition-colors"
+            >
+              <LogOut size={14} />
+              Logout
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* Top strip */}
+      <div className="bg-gold-dim/10 border-b border-slate-line">
+        <div className="flex items-center justify-between h-8 px-6">
+          <div className="flex items-center gap-2">
+            <span className="font-mono text-sm text-slate">{liveCount}</span>
+            <span className="text-xs text-slate-muted">sessions in progress</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-slate-muted">today's completed:</span>
+            <span className="font-mono text-sm text-slate">{completedCount}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Body */}
+      <main className="flex-1 p-8">
+        {loading ? (
+          <div className="flex items-center justify-center h-64">
+            <span className="font-display text-slate-muted text-base">Loading...</span>
+          </div>
+        ) : liveCount === 0 ? (
+          <div className="flex flex-col items-center justify-center h-64" role="status">
+            <span className="font-mono text-7xl text-slate-line">0</span>
+            <span className="text-slate-muted text-sm mt-3">no sessions in progress right now</span>
+            <span className="text-slate-muted text-xs mt-2">The page will refresh automatically.</span>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {tiles.map((tile) => (
+              <SessionTile
+                key={tile.session_short_id}
+                tile={tile}
+                onClick={() => navigate(`/watch/${tile.session_short_id}`)}
+              />
+            ))}
+          </div>
+        )}
+      </main>
+    </div>
+  );
+}
