@@ -121,18 +121,20 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-ivory flex flex-col">
-      {/* Header */}
-      <header className="sticky top-0 z-10 bg-white border-b border-border">
-        <div className="flex items-center justify-between h-16 px-6">
+      {/* Header — full-width background, content in container */}
+      <header className="sticky top-0 z-10 w-full bg-white border-b border-border">
+        <div className="max-w-[1280px] mx-auto px-8 md:px-4 flex items-center justify-between h-16">
           <div className="flex items-center gap-3">
             <span className="text-gold text-[15px] font-bold tracking-wide">Enaya</span>
-            <span className="text-border">·</span>
-            <span className="text-text-main text-[13px]">{compound?.name}</span>
-            <span className="text-text-muted text-[11px]">{compound?.code}</span>
+            <span className="text-border">│</span>
+            <div className="flex items-baseline gap-2">
+              <span className="text-text-main text-[14px] font-medium">{compound?.name}</span>
+              <span className="text-text-muted text-[11px] font-mono">{compound?.code}</span>
+            </div>
           </div>
 
           <div className="flex items-center gap-4">
-            <span className="text-text-muted text-[12px] font-medium">{cairoTime}</span>
+            <span className="text-text-muted text-[12px] font-medium font-mono">{cairoTime}</span>
             <button
               onClick={logout}
               className="flex items-center gap-1.5 text-text-muted text-[13px] hover:text-text-main transition-colors"
@@ -144,9 +146,9 @@ export default function DashboardPage() {
         </div>
       </header>
 
-      {/* Top strip */}
-      <div className="bg-gold-light border-b border-border">
-        <div className="flex items-center justify-between h-8 px-6">
+      {/* Top strip — full-width background, content in container */}
+      <div className="w-full bg-[rgba(198,168,76,0.12)] border-b border-border">
+        <div className="max-w-[1280px] mx-auto px-8 md:px-4 h-10 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="text-[13px] font-semibold text-text-main">{liveCount}</span>
             <span className="text-[12px] text-text-muted">sessions in progress</span>
@@ -158,17 +160,17 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Body */}
-      <main className="flex-1 p-8">
+      {/* Body — content in container */}
+      <main className="flex-1 max-w-[1280px] mx-auto px-8 md:px-4 py-16 w-full">
         {loading ? (
           <div className="flex items-center justify-center h-64">
             <span className="text-text-muted text-[13px]">Loading...</span>
           </div>
         ) : liveCount === 0 ? (
-          <div className="flex flex-col items-center justify-center h-64" role="status">
-            <span className="text-[72px] font-semibold text-border leading-none">0</span>
-            <span className="text-text-muted text-[13px] mt-3">no sessions in progress right now</span>
-            <span className="text-text-secondary text-[11px] mt-2">The page will refresh automatically.</span>
+          <div className="max-w-md mx-auto mt-24 border border-border p-16 text-center" role="status">
+            <span className="text-[72px] font-mono text-border leading-none">0</span>
+            <span className="text-text-muted text-[13px] mt-4 block">no sessions in progress right now</span>
+            <span className="text-text-secondary text-[11px] mt-8 block tracking-wider">the page will refresh automatically</span>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
