@@ -72,6 +72,15 @@ function SessionTile({ tile, onClick }: { tile: LiveSessionTile; onClick: () => 
   );
 }
 
+// Reusable container constraint — inline style guarantees it works
+// regardless of Tailwind JIT / arbitrary value support
+const CONTAINER_STYLE: React.CSSProperties = {
+  maxWidth: '1280px',
+  width: '100%',
+  marginLeft: 'auto',
+  marginRight: 'auto',
+};
+
 export default function DashboardPage() {
   const { sessionToken, compound, logout } = useAuth();
   const navigate = useNavigate();
@@ -121,9 +130,9 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-ivory flex flex-col">
-      {/* Header — full-width background, content in container */}
-      <header className="sticky top-0 z-10 w-full border-b border-border flex justify-center">
-        <div className="max-w-[1280px] w-full px-8 py-4 flex justify-between items-center">
+      {/* Header — full-width background, content constrained via inline style */}
+      <header className="sticky top-0 z-10 w-full border-b border-border bg-ivory">
+        <div style={CONTAINER_STYLE} className="px-8 py-4 flex justify-between items-center">
           <div className="flex items-center gap-3">
             <span className="text-gold text-[15px] font-bold tracking-wide">Enaya</span>
             <span className="text-border">│</span>
@@ -146,9 +155,9 @@ export default function DashboardPage() {
         </div>
       </header>
 
-      {/* Top strip — full-width background, content in container */}
-      <div className="w-full bg-[#F0EAD6] flex justify-center">
-        <div className="max-w-[1280px] w-full px-8 h-10 flex justify-between items-center">
+      {/* Top strip — full-width tinted background, content constrained */}
+      <div className="w-full bg-[#F0EAD6]">
+        <div style={CONTAINER_STYLE} className="px-8 h-10 flex justify-between items-center">
           <div className="flex items-center gap-2">
             <span className="text-[13px] font-semibold text-text-main">{liveCount}</span>
             <span className="text-[12px] text-text-muted">sessions in progress</span>
@@ -162,20 +171,29 @@ export default function DashboardPage() {
 
       {/* Body */}
       {loading ? (
-        <main className="w-full min-h-[calc(100vh-140px)] flex items-center justify-center px-8">
+        <main className="flex-1 flex items-center justify-center px-8">
           <span className="text-text-muted text-[13px]">Loading...</span>
         </main>
       ) : liveCount === 0 ? (
-        <main className="w-full min-h-[calc(100vh-140px)] flex items-center justify-center px-8">
-          <div className="max-w-md w-full border border-border p-16 text-center" role="status">
+        <main className="flex-1 flex items-center justify-center px-8">
+          <div
+            className="w-full border border-border p-16 text-center"
+            style={{ maxWidth: '28rem' }}
+            role="status"
+          >
             <div className="text-8xl font-mono text-border">0</div>
             <div className="text-sm text-text-muted mt-4">no sessions in progress right now</div>
-            <div className="text-xs text-text-muted mt-8 tracking-wider uppercase">the page will refresh automatically</div>
+            <div className="text-xs text-text-muted mt-8 tracking-wider uppercase">
+              the page will refresh automatically
+            </div>
           </div>
         </main>
       ) : (
-        <main className="w-full flex justify-center px-8 py-12">
-          <div className="max-w-[1280px] w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <main className="flex-1 px-8 py-12">
+          <div
+            style={CONTAINER_STYLE}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+          >
             {tiles.map((tile) => (
               <SessionTile
                 key={tile.session_short_id}
