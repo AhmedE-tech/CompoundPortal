@@ -122,8 +122,8 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-ivory flex flex-col">
       {/* Header — full-width background, content in container */}
-      <header className="sticky top-0 z-10 w-full bg-white border-b border-border">
-        <div className="max-w-[1280px] mx-auto px-4 md:px-8 flex items-center justify-between h-16">
+      <header className="sticky top-0 z-10 w-full border-b border-border">
+        <div className="max-w-[1280px] mx-auto px-8 py-4 flex justify-between items-center">
           <div className="flex items-center gap-3">
             <span className="text-gold text-[15px] font-bold tracking-wide">Enaya</span>
             <span className="text-border">│</span>
@@ -147,8 +147,8 @@ export default function DashboardPage() {
       </header>
 
       {/* Top strip — full-width background, content in container */}
-      <div className="w-full bg-[rgba(198,168,76,0.12)] border-b border-border">
-        <div className="max-w-[1280px] mx-auto px-4 md:px-8 h-10 flex items-center justify-between">
+      <div className="w-full bg-[#F0EAD6]">
+        <div className="max-w-[1280px] mx-auto px-8 h-10 flex justify-between items-center">
           <div className="flex items-center gap-2">
             <span className="text-[13px] font-semibold text-text-main">{liveCount}</span>
             <span className="text-[12px] text-text-muted">sessions in progress</span>
@@ -162,20 +162,20 @@ export default function DashboardPage() {
 
       {/* Body */}
       {loading ? (
-        <main className="flex-1 flex items-center justify-center w-full">
+        <main className="w-full min-h-[calc(100vh-140px)] flex items-center justify-center px-8">
           <span className="text-text-muted text-[13px]">Loading...</span>
         </main>
       ) : liveCount === 0 ? (
-        <main className="flex-1 min-h-[calc(100vh-140px)] flex items-center justify-center px-8 w-full">
+        <main className="w-full min-h-[calc(100vh-140px)] flex items-center justify-center px-8">
           <div className="max-w-md w-full border border-border p-16 text-center" role="status">
-            <span className="text-[72px] font-mono text-border leading-none">0</span>
-            <span className="text-text-muted text-[13px] mt-4 block">no sessions in progress right now</span>
-            <span className="text-text-secondary text-[11px] mt-8 block tracking-wider">the page will refresh automatically</span>
+            <div className="text-8xl font-mono text-border">0</div>
+            <div className="text-sm text-text-muted mt-4">no sessions in progress right now</div>
+            <div className="text-xs text-text-muted mt-8 tracking-wider uppercase">the page will refresh automatically</div>
           </div>
         </main>
       ) : (
-        <main className="max-w-[1280px] mx-auto px-4 md:px-8 py-12 w-full">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <main className="max-w-[1280px] mx-auto px-8 py-12 w-full">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {tiles.map((tile) => (
               <SessionTile
                 key={tile.session_short_id}
