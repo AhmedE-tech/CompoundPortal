@@ -122,8 +122,8 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-ivory flex flex-col">
       {/* Header — full-width background, content in container */}
-      <header className="sticky top-0 z-10 w-full border-b border-border">
-        <div className="max-w-[1280px] mx-auto px-8 py-4 flex justify-between items-center">
+      <header className="sticky top-0 z-10 w-full border-b border-border flex justify-center">
+        <div className="max-w-[1280px] w-full px-8 py-4 flex justify-between items-center">
           <div className="flex items-center gap-3">
             <span className="text-gold text-[15px] font-bold tracking-wide">Enaya</span>
             <span className="text-border">│</span>
@@ -147,8 +147,8 @@ export default function DashboardPage() {
       </header>
 
       {/* Top strip — full-width background, content in container */}
-      <div className="w-full bg-[#F0EAD6]">
-        <div className="max-w-[1280px] mx-auto px-8 h-10 flex justify-between items-center">
+      <div className="w-full bg-[#F0EAD6] flex justify-center">
+        <div className="max-w-[1280px] w-full px-8 h-10 flex justify-between items-center">
           <div className="flex items-center gap-2">
             <span className="text-[13px] font-semibold text-text-main">{liveCount}</span>
             <span className="text-[12px] text-text-muted">sessions in progress</span>
@@ -174,8 +174,8 @@ export default function DashboardPage() {
           </div>
         </main>
       ) : (
-        <main className="max-w-[1280px] mx-auto px-8 py-12 w-full">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <main className="w-full flex justify-center px-8 py-12">
+          <div className="max-w-[1280px] w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {tiles.map((tile) => (
               <SessionTile
                 key={tile.session_short_id}
