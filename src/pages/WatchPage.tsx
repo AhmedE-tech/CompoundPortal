@@ -425,37 +425,35 @@ export default function WatchPage() {
     }
   };
 
-  if (playerState === 'loading') {
-    return (
-      <div className="fixed inset-0 bg-[#1C1C1C] flex items-center justify-center">
-        <div className="flex flex-col items-center gap-3">
-          <span className="w-3 h-3 rounded-full bg-gold animate-pulse-live" />
-          <span className="text-white/90 text-[13px]">Connecting to live stream...</span>
-        </div>
-      </div>
-    );
-  }
-
-  if (playerState === 'ended' || playerState === 'error') {
-    return (
-      <div className="fixed inset-0 bg-[#1C1C1C] flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-white/90 text-[15px] font-medium mb-6">{errorMessage}</p>
-          <button
-            onClick={() => navigate('/dashboard')}
-            className="px-6 py-2.5 bg-gold text-white text-[13px] font-semibold rounded-[6px] hover:bg-gold-hover transition-colors"
-          >
-            Back to dashboard
-          </button>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="fixed inset-0 bg-[#1C1C1C]">
-      {/* Video container */}
+      {/* Video container — ALWAYS in DOM so Agora can play() into it during loading */}
       <div ref={videoContainerRef} className="absolute inset-0" />
+
+      {/* Loading overlay — rendered ON TOP of the video container */}
+      {playerState === 'loading' && (
+        <div className="absolute inset-0 z-10 bg-[#1C1C1C] flex items-center justify-center">
+          <div className="flex flex-col items-center gap-3">
+            <span className="w-3 h-3 rounded-full bg-gold animate-pulse-live" />
+            <span className="text-white/90 text-[13px]">Connecting to live stream...</span>
+          </div>
+        </div>
+      )}
+
+      {/* Error/ended overlay — rendered ON TOP of the video container */}
+      {(playerState === 'ended' || playerState === 'error') && (
+        <div className="absolute inset-0 z-10 bg-[#1C1C1C] flex items-center justify-center">
+          <div className="text-center">
+            <p className="text-white/90 text-[15px] font-medium mb-6">{errorMessage}</p>
+            <button
+              onClick={() => navigate('/dashboard')}
+              className="px-6 py-2.5 bg-gold text-white text-[13px] font-semibold rounded-[6px] hover:bg-gold-hover transition-colors"
+            >
+              Back to dashboard
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Overlay top bar */}
       <div
