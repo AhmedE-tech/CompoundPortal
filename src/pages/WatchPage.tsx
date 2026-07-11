@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import AgoraRTC, { type IAgoraRTCClient, type ICameraVideoTrack, type IMicrophoneAudioTrack } from 'agora-rtc-sdk-ng';
-import { X } from 'lucide-react';
+import { X, RotateCw, Maximize, Minimize } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import type { StreamTokenLog, StreamTokenResponse } from '../types';
@@ -26,6 +26,8 @@ export default function WatchPage() {
   const [errorMessage, setErrorMessage] = useState('');
   const [overlayVisible, setOverlayVisible] = useState(true);
   const [elapsedMinutes, setElapsedMinutes] = useState(0);
+  const [rotation, setRotation] = useState(0);
+  const [fitMode, setFitMode] = useState<'contain' | 'cover'>('contain');
 
   // Inactivity modal
   const [showInactivityModal, setShowInactivityModal] = useState(false);
@@ -101,6 +103,10 @@ export default function WatchPage() {
     },
     [navigate, reportDisconnect, teardownAgora],
   );
+
+  const handleRotate = useCallback(() => {
+    setRotation((prev) => (prev + 90) % 360);
+  }, []);
 
   const clearAllTimers = useCallback(() => {
     if (overlayTimerRef.current) clearTimeout(overlayTimerRef.current);
@@ -250,6 +256,25 @@ export default function WatchPage() {
     return () => document.removeEventListener('visibilitychange', onVisibilityChange);
   }, [navigateToDashboard]);
 
+  // --- Update fit mode on video element ---
+  useEffect(() => {
+    const videoEl = videoContainerRef.current?.querySelector('video');
+    if (videoEl) {
+      videoEl.style.objectFit = fitMode;
+    }
+  }, [fitMode]);
+
+  // --- Keyboard shortcuts for rotation and fit ---
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (showInactivityModal || showHardCapToast) return;
+      if (e.key === 'r' || e.key === 'R') handleRotate();
+      if (e.key === 'f' || e.key === 'F') setFitMode((prev) => (prev === 'contain' ? 'cover' : 'contain'));
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [showInactivityModal, showHardCapToast, handleRotate]);
+
   // --- Main stream initialization ---
   useEffect(() => {
     if (!sessionToken || !sessionId) return;
@@ -322,6 +347,10 @@ export default function WatchPage() {
           if (cancelled) return;
           if (mediaType === 'video' && user.videoTrack) {
             user.videoTrack.play(videoContainerRef.current!);
+            const videoEl = videoContainerRef.current?.querySelector('video');
+            if (videoEl) {
+              videoEl.style.objectFit = fitMode;
+            }
             setPlayerState('streaming');
             setElapsedMinutes(Math.floor((Date.now() - new Date().getTime()) / 60000));
           }
@@ -373,6 +402,7 @@ export default function WatchPage() {
     scheduleTokenRefresh,
     startHardCapTimer,
     showOverlayTemporarily,
+    fitMode,
   ]);
 
   const handleContinueWatching = () => {
@@ -428,7 +458,16 @@ export default function WatchPage() {
   return (
     <div className="fixed inset-0 bg-[#1C1C1C]">
       {/* Video container — ALWAYS in DOM so Agora can play() into it during loading */}
-      <div ref={videoContainerRef} className="absolute inset-0" />
+      <div
+        ref={videoContainerRef}
+        className="absolute inset-0"
+        style={{
+          transform: `rotate(${rotation}deg)`,
+          ...(rotation === 90 || rotation === 270
+            ? { width: '100vh', height: '100vw', top: '50%', left: '50%', marginTop: '-50vw', marginLeft: '-50vh' }
+            : {}),
+        }}
+      />
 
       {/* Loading overlay — rendered ON TOP of the video container */}
       {playerState === 'loading' && (
@@ -468,6 +507,28 @@ export default function WatchPage() {
           </span>
           <span className="text-white/70 text-[12px]">{elapsedMinutes}m</span>
         </div>
+
+        {/* Center: video controls */}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleRotate}
+            className="w-8 h-8 flex items-center justify-center rounded bg-white/10 hover:bg-white/20 text-white transition-colors"
+            aria-label="Rotate video"
+            title="Rotate 90°"
+          >
+            <RotateCw size={16} />
+          </button>
+          <button
+            onClick={() => setFitMode((prev) => (prev === 'contain' ? 'cover' : 'contain'))}
+            className="h-8 px-3 flex items-center gap-1.5 rounded bg-white/10 hover:bg-white/20 text-white text-[11px] transition-colors"
+            aria-label="Toggle video fit"
+            title={fitMode === 'contain' ? 'Fill viewport' : 'Fit to screen'}
+          >
+            {fitMode === 'contain' ? <Maximize size={14} /> : <Minimize size={14} />}
+            <span>{fitMode === 'contain' ? 'Fill' : 'Fit'}</span>
+          </button>
+        </div>
+
         <button
           onClick={() => navigateToDashboard('user_close')}
           className="w-10 h-10 flex items-center justify-center text-white hover:text-gold transition-colors"
