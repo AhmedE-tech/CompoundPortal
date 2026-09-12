@@ -26,7 +26,7 @@
 
 ## Notes log
 - 2026-09-12 — Ahmed installed `refero-design` skill globally via `npx skills add https://github.com/referodesign/refero_skill` (copied to ~/.agents/skills/refero-design; opencode must restart to load it). It is the PRIMARY design skill for all UI work — refero-design overrides generic design skills; use bundled craft references + MCP research when available.
-- 2026-09-12 — COMPLETED Spec 2 (Aeon feature expansion), commit <pending>. New surfaces: `ComplaintsPage.tsx` (route `/complaints`, RPC `compound_get_complaints`), roster modal `ClientRosterWindow.tsx` + `hooks/useClientRoster.ts`, `utils/screenshotDeterrence.ts`. Gotchas learned:
+- 2026-09-12 — COMPLETED Spec 2 (Aeon feature expansion), commit `2070c1a`. New surfaces: `ComplaintsPage.tsx` (route `/complaints`, RPC `compound_get_complaints`), roster modal `ClientRosterWindow.tsx` + `hooks/useClientRoster.ts`, `utils/screenshotDeterrence.ts`. Gotchas learned:
   - `.ts` vs `.tsx`: a file exporting a JSX component (even helpers) must be `.tsx` — BUT mixing component + non-component exports triggers oxlint `react/only-export-components`. Keep hook-only modules as `.ts` (e.g. `screenshotDeterrence.ts`) and inline JSX components where they render.
   - Tailwind v4 NORMALIZES arbitrary color values in output: `bg-[rgba(70,167,88,0.12)]` compiles to `background-color:#46a7581f` (hex+alpha). Grep built CSS by resulting hex, not source form.
   - AuthContext now has `normalizeUser()` (fail-closed: missing `permissions` → all flags false). Diff is additive ONLY; don't touch login heartbeat/single-session.
@@ -36,7 +36,7 @@
   - Per-user header identity (`display_name · role_label`) hidden below `sm` (keeps the 400px rule: name+clock+logout survive); WatchPage bottom bar is now `display_name · HH:MM` Cairo live stamp.
   - Deterrence util is best-effort only (spec: "do not claim it prevents capture"); tiled watermark is ON for the roster data view, intentionally OFF over the live video (bottom-line cue suffices).
   - oxlint baseline still exactly the 5 pre-existing warnings (AuthContext ×4, WatchPage:109 clearAllTimers). New files added ZERO new warnings.
-- 2026-09-12 — COMPLETED Spec 1 (dark-luxury reskin), commit <pending>. Gotchas learned:
+- 2026-09-12 — COMPLETED Spec 1 (dark-luxury reskin), commit `50eb331`. Gotchas learned:
   - The logo PNGs (`public/enaya-emblem.png` 248×144, `enaya-wordmark.png` 480×135, `enaya-logo.png` 540×346) were committed to disk but UNTRACKED in git — remembered to include them in the commit (they're load-bearing).
   - Tailwind v4 only emits utilities that are USED; missing class in built CSS usually means it's just not referenced — verify with the actual used selector (e.g. `hover\:shadow-gold` vs `shadow-gold`).
   - Tokens must be mirrored in BOTH `@theme` (Tailwind utilities) and `:root` (inline `var(--color-*)` on LoginPage). Purpose-named, not color-named.
