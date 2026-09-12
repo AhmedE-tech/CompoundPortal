@@ -2,10 +2,11 @@
 
 @theme {
   /* Surfaces (dark, layered — NOT pure black) */
-  --color-ink: #0E0F12;          /* app background / canvas */
+  --color-ink: #0C0D10;          /* app background / canvas */
   --color-surface-1: #16181D;    /* header, panels, tiles base */
   --color-surface-2: #1E2127;    /* elevated: cards, modals, inputs */
-  --color-surface-3: #262A31;    /* hover of elevated */
+  --color-surface-3: #23272E;    /* hover of elevated */
+  --color-surface-hover: #2A2F37; /* active hover of elevated */
 
   /* Text on dark */
   --color-text-main: #F3F1EC;    /* primary (warm off-white, not #fff) */
@@ -15,12 +16,13 @@
   /* Gold accent — the ONLY brand accent. Use sparingly. */
   --color-gold: #C9A227;         /* base gold (matches logo) */
   --color-gold-soft: #E4C766;    /* highlight / light gold for text-on-dark */
+  --color-gold-bright: #F0D98A;  /* brighter gold for large numerals / active tab */
   --color-gold-hover: #D8B23A;   /* interactive hover */
   --color-gold-tint: rgba(201,162,39,0.12); /* faint gold wash for active/selected */
 
   /* Borders (low-contrast on dark) */
   --color-border: rgba(243,241,236,0.08);
-  --color-border-strong: rgba(243,241,236,0.16);
+  --color-border-strong: rgba(244,242,236,0.16);
   --color-border-gold: rgba(201,162,39,0.45);
 
   /* Semantic */
@@ -30,39 +32,43 @@
 
   --shadow-sm: 0 1px 2px rgba(0,0,0,0.4);
   --shadow-md: 0 6px 24px rgba(0,0,0,0.45);
-  --shadow-gold: 0 0 0 1px rgba(201,162,39,0.35), 0 8px 30px rgba(201,162,39,0.10);
+  --shadow-gold: 0 0 0 1px rgba(201,162,39,0.35), 0 10px 40px rgba(201,162,39,0.10);
 
   --font-body: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
   --font-display: "Fraunces", Georgia, serif;   /* for the few luxury display moments */
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+  --radius-lg: 18px;
 }
 
 :root {
   color-scheme: dark;
 
   /* Mirror for inline-style consumers (LoginPage) — purpose-named */
-  --color-bg-ink: #0E0F12;
+  --color-bg-ink: #0C0D10;
   --color-bg-surface-1: #16181D;
   --color-bg-surface-2: #1E2127;
-  --color-bg-surface-3: #262A31;
+  --color-bg-surface-3: #23272E;
+  --color-bg-surface-hover: #2A2F37;
   --color-text-main: #F3F1EC;
   --color-text-muted: #A8A79F;
   --color-text-subtle: #6F6E68;
   --color-gold-accent: #C9A227;
   --color-gold-soft: #E4C766;
+  --color-gold-bright: #F0D98A;
   --color-gold-hover: #D8B23A;
   --color-gold-tint: rgba(201,162,39,0.12);
   --color-border: rgba(243,241,236,0.08);
-  --color-border-strong: rgba(243,241,236,0.16);
+  --color-border-strong: rgba(244,242,236,0.16);
   --color-error: #E5484D;
   --color-success: #46A758;
 
   --shadow-sm: 0 1px 2px rgba(0,0,0,0.4);
   --shadow-md: 0 6px 24px rgba(0,0,0,0.45);
-  --shadow-gold: 0 0 0 1px rgba(201,162,39,0.35), 0 8px 30px rgba(201,162,39,0.10);
+  --shadow-gold: 0 0 0 1px rgba(201,162,39,0.35), 0 10px 40px rgba(201,162,39,0.10);
   --radius-sm: 8px;
   --radius-md: 12px;
-  --radius-lg: 16px;
+  --radius-lg: 18px;
 }
 
 * {
@@ -79,7 +85,9 @@ html, body, #root {
 body {
   font-family: var(--font-body);
   font-size: 13px;
-  background-color: var(--color-bg-ink);
+  background:
+    radial-gradient(1200px 480px at 50% -260px, rgba(201,162,39,0.10), transparent 70%),
+    var(--color-bg-ink);
   color: var(--color-text-main);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -119,8 +127,35 @@ a {
   animation: pulse-live 1.5s ease-in-out infinite;
 }
 
+/* Mockup chrome helpers — gradients that are fragile inside Tailwind arbitrary values */
+.topbar-surface {
+  background: linear-gradient(180deg, rgba(27,30,35,0.6), rgba(20,22,25,0.3));
+}
+
+.stat-surface {
+  background: linear-gradient(160deg, var(--color-surface-2), var(--color-surface-1));
+}
+
+.tile-surface {
+  background:
+    linear-gradient(180deg, rgba(0,0,0,0) 40%, rgba(0,0,0,0.55)),
+    linear-gradient(135deg, #232830, #15181d);
+}
+
+/* Pending roster ring — spinning gold arc around the lock icon */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spin 1.2s linear infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .animate-pulse-live {
+  .animate-pulse-live,
+  .animate-spin-slow {
     animation: none;
     opacity: 1;
   }

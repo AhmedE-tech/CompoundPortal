@@ -1,5 +1,5 @@
 import { useRef } from 'react';
-import { X } from 'lucide-react';
+import { Clock, Lock, X } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useScreenshotDeterrence, useWatermarkStamp } from '../utils/screenshotDeterrence';
 import type { UseClientRoster } from '../hooks/useClientRoster';
@@ -34,6 +34,29 @@ function WatermarkOverlay({ displayName }: { displayName: string }) {
   );
 }
 
+function GoldCta({ onClick, children }: { onClick: () => void; children: React.ReactNode }) {
+  return (
+    <button
+      onClick={onClick}
+      className="inline-flex items-center gap-2 rounded-[var(--radius-sm)] bg-gold px-5 py-2.5 text-[12px] font-semibold text-ink transition-colors hover:bg-gold-hover"
+    >
+      {children}
+    </button>
+  );
+}
+
+function PendingRing() {
+  return (
+    <div className="relative mx-auto mb-[22px] grid h-[76px] w-[76px] place-items-center rounded-full bg-gold-tint">
+      <span
+        aria-hidden="true"
+        className="absolute -inset-1 rounded-full border-2 border-transparent border-t-gold border-r-gold-soft animate-spin-slow"
+      />
+      <Lock size={32} className="text-gold-soft" />
+    </div>
+  );
+}
+
 export default function ClientRosterWindow({
   roster,
   onClose,
@@ -41,14 +64,14 @@ export default function ClientRosterWindow({
   roster: UseClientRoster;
   onClose: () => void;
 }) {
-  const { user } = useAuth();
+  const { user, compound } = useAuth();
   const panelRef = useRef<HTMLDivElement>(null);
   const { paused, resume } = useScreenshotDeterrence(panelRef);
   const showWatermark = roster.phase === 'ready';
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 overflow-y-auto"
+      className="fixed inset-0 z-50 grid place-items-center overflow-y-auto bg-[rgba(6,7,9,0.78)] p-5 backdrop-blur-[3px]"
       onClick={onClose}
       role="presentation"
     >
@@ -58,26 +81,28 @@ export default function ClientRosterWindow({
         role="dialog"
         aria-modal="true"
         aria-label="Client roster"
-        className="relative w-full max-w-xl max-h-[80vh] overflow-y-auto overscroll-contain bg-surface-2 border border-border rounded-[var(--radius-md)] shadow-md"
+        className="relative w-full max-w-[440px] max-h-[80vh] overflow-y-auto overscroll-contain bg-[linear-gradient(180deg,var(--color-surface-2),var(--color-surface-1))] border border-border-strong rounded-[var(--radius-lg)] shadow-md"
       >
         {showWatermark && <WatermarkOverlay displayName={user?.display_name ?? 'Enaya'} />}
 
         <div className="relative z-10">
-          <div className="flex items-center justify-between gap-4 px-6 pt-5 pb-3 border-b border-border">
-            <div className="flex items-center gap-2 min-w-0">
-              <span className="text-text-main text-[14px] font-medium">Client roster</span>
-              <span className="truncate text-text-subtle text-[12px]">{user?.display_name}</span>
+          <div className="flex items-center justify-between gap-4 border-b border-border px-[22px] py-5">
+            <div className="flex min-w-0 flex-col gap-0.5">
+              <h3 className="text-[15px] font-semibold text-text-main">Client Roster</h3>
+              <span className="truncate text-[11.5px] text-text-subtle">
+                {compound?.name ?? user?.display_name}
+              </span>
             </div>
             <button
               onClick={onClose}
               aria-label="Close client roster"
-              className="shrink-0 text-text-muted hover:text-gold-soft transition-colors"
+              className="grid h-[30px] w-[30px] shrink-0 place-items-center rounded-[8px] bg-surface-3 text-text-muted transition-all hover:bg-surface-hover hover:text-text-main"
             >
-              <X size={18} />
+              <X size={16} />
             </button>
           </div>
 
-          <div className="px-6 py-5" aria-live="polite">
+          <div className="px-[28px] py-[34px]" aria-live="polite">
             <RosterBody roster={roster} />
           </div>
         </div>
@@ -101,31 +126,32 @@ function RosterBody({ roster }: { roster: UseClientRoster }) {
 
   if (phase === 'error') {
     return (
-      <div className="flex flex-col items-start gap-3">
-        <p className="text-text-muted text-[13px]">{error ?? "Couldn't load your clients right now."}</p>
-        <button
-          onClick={roster.retry}
-          className="text-gold-soft text-[12px] font-medium hover:underline"
-        >
-          Try again
-        </button>
+      <div className="text-center">
+        <h4 className="mb-2.5 text-[17px] font-semibold tracking-[-0.01em] text-text-main">
+          Request interrupted
+        </h4>
+        <p className="mx-auto max-w-[320px] text-[13px] leading-[1.6] text-text-muted">
+          {error ?? "Couldn't reach the client roster right now."}
+        </p>
+        <div className="mt-5">
+          <GoldCta onClick={roster.retry}>Try again</GoldCta>
+        </div>
       </div>
     );
   }
 
   if (phase === 'expired') {
     return (
-      <div className="flex flex-col items-start gap-4">
-        <div className="flex flex-col gap-1">
-          <p className="text-text-main text-[13px] font-medium">Your client access has expired.</p>
-          <p className="text-text-subtle text-[12px]">Request approval again to keep viewing.</p>
+      <div className="text-center">
+        <h4 className="mb-2.5 text-[17px] font-semibold tracking-[-0.01em] text-text-main">
+          Your client access has expired.
+        </h4>
+        <p className="mx-auto max-w-[320px] text-[13px] leading-[1.6] text-text-muted">
+          Request approval again to keep viewing.
+        </p>
+        <div className="mt-5">
+          <GoldCta onClick={roster.retry}>Request again</GoldCta>
         </div>
-        <button
-          onClick={roster.retry}
-          className="px-4 py-2 bg-gold text-ink text-[12px] font-semibold rounded-[6px] hover:bg-gold-hover transition-colors"
-        >
-          Request again
-        </button>
       </div>
     );
   }
@@ -135,7 +161,7 @@ function RosterBody({ roster }: { roster: UseClientRoster }) {
       ? ACCESS_EXPIRES.format(new Date(accessExpiresAt))
       : null;
     return (
-      <div>
+      <div className="text-left">
         {expiresAt && (
           <p className="mb-4 text-text-subtle text-[12px]">
             Access expires {expiresAt}
@@ -181,29 +207,20 @@ function RosterBody({ roster }: { roster: UseClientRoster }) {
     );
   }
 
-  if (phase === 'pending') {
-    return (
-      <div className="flex flex-col gap-3">
-        <div className="flex items-center gap-3">
-          <span
-            className="w-3 h-3 rounded-full bg-gold animate-pulse-live"
-            aria-hidden="true"
-          />
-          <span className="text-text-main text-[13px]">
-            Request sent — waiting for Enaya admin approval
-          </span>
-        </div>
-        <p className="text-text-subtle text-[12px] leading-relaxed">
-          This page will refresh automatically until your request is approved.
-        </p>
-      </div>
-    );
-  }
-
   return (
-    <div className="flex items-center gap-3">
-      <span className="w-3 h-3 rounded-full bg-gold animate-pulse-live" aria-hidden="true" />
-      <span className="text-text-muted text-[13px]">Requesting access…</span>
+    <div className="text-center">
+      <PendingRing />
+      <h4 className="mb-2.5 text-[17px] font-semibold tracking-[-0.01em] text-text-main">
+        Request sent
+      </h4>
+      <p className="mx-auto max-w-[320px] text-[13px] leading-[1.6] text-text-muted">
+        We've asked Enaya to approve your access to this compound's client roster. This window will
+        open automatically once it's granted.
+      </p>
+      <div className="mt-5 inline-flex items-center justify-center gap-2.5 rounded-[var(--radius-sm)] bg-surface-3 px-4 py-3 text-[12px] text-text-subtle">
+        <Clock size={15} className="shrink-0 text-gold-soft" />
+        Waiting for admin approval — refreshing automatically
+      </div>
     </div>
   );
 }
