@@ -71,10 +71,12 @@
   --radius-lg: 18px;
 }
 
-* {
+*, *::before, *::after {
   box-sizing: border-box;
+}
+
+body, h1, h2, h3, h4, p, figure, blockquote, dl, dd {
   margin: 0;
-  padding: 0;
 }
 
 html, body, #root {
