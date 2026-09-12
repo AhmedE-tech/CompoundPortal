@@ -18,7 +18,8 @@
 
 ## 2. Portal structure (small & focused)
 - `lib/supabase.ts` — client. `contexts/AuthContext.tsx` — the session-token auth (see §4). `components/ProtectedRoute.tsx`.
-- `pages/`: **LoginPage**, **DashboardPage** (live sessions list), **WatchPage** (Agora live viewer — the core).
+- `pages/`: **LoginPage**, **DashboardPage** (live sessions list), **WatchPage** (Agora live viewer — the core), **ComplaintsPage** (status+date only, route `/complaints`).
+- `hooks/useClientRoster.ts` — request→poll→data→expiry state machine for the roster RPC pair. `components/ClientRosterWindow.tsx` — view-only roster modal (backdrop + panel, `overscroll-contain`, `aria-live="polite"`), launched from the dashboard via a user gesture, never a route. `utils/screenshotDeterrence.ts` — best-effort deterrence hooks (`user-select:none`, contextmenu/beforeprint disable, window-blur scrim, `useWatermarkStamp()` Cairo HH:MM on a 15s tick); the tiled `WatermarkOverlay` sits inline in ClientRosterWindow to keep the hook module `.ts` fast-refresh clean.
 - `utils/fingerprint.ts` — device fingerprint for session claiming. `types/index.ts`.
 - **Theme (since Spec 1, 2026-09-12):** committed dark-luxury system in `src/index.css` — tokens live in BOTH the Tailwind v4 `@theme` block (utilities like `bg-ink`, `text-gold-soft`, `shadow-gold`) AND the `:root` CSS vars (LoginPage inline styles). One accent: gold (`#C9A227`; `gold-soft #E4C766` for gold **text** on dark). Surfaces layered ink → surface-1 → surface-2 → surface-3. Fonts: Inter (body), Fraunces (display, defined but unused so far), JetBrains Mono.
 - **Logo assets in `public/`** (real PNGs, no CSS/SVG redraw): `enaya-logo.png` (full stacked, login), `enaya-emblem.png` (248×144 hand emblem, header + empty state), `enaya-wordmark.png` (480×135), `favicon-256.png`. Header serves emblem at 48×28 + wordmark at 64×18 (2×-safe, explicit width/height to avoid CLS).
@@ -32,8 +33,11 @@
 - `_compound_verify_session(p_session_token)` — internal verify.
 - `compound_heartbeat(p_session_token)` — keep session alive.
 - `compound_logout(p_session_token)`.
-- `compound_get_live_sessions(p_session_token)` — the dashboard feed.
+- `compound_get_live_sessions(p_session_token)` — the dashboard feed (now also returns `compound_clients_count` → the third counter).
 - `compound_request_stream_token(p_session_token, p_session_id)` — get an Agora token to watch a stream.
+- `compound_get_complaints(p_session_token)` — complaints feed (status + date only; needs `view_complaints`).
+- `compound_request_client_roster(p_session_token)` — request roster access → `{ request_id, status, already_granted }` (needs `view_clients`).
+- `compound_get_client_roster(p_session_token)` — roster rows + `access_expires_at`; errors `ROSTER_ACCESS_NOT_GRANTED` until approved.
 - `compound_report_stream_disconnect(p_session_token, p_log_id, p_reason)`.
 - `compound_cleanup_stale_sessions()` — cron cleanup.
 
@@ -56,7 +60,8 @@ All are SECURITY DEFINER except the two INVOKER `trg_compounds_*` triggers.
 ## 7. Open items
 - context.md ~80% — deepen WatchPage/Agora flow as we work.
 - No AGENTS.md in the portal repo yet — global OpenCode skill applies.
-- **Spec 1 done, Spec 2 pending approval.** Spec 2 (`context/tasks/02-aeon-feature-expansion.md`) adds: per-user permissions gating, third counter (registered clients) — slot already commented in Dashboard counters strip, Complaints tab (status+date only), client roster behind admin approval, per-user header + watermark. `--font-display` (Fraunces) defined but unused — Spec 2's display moments may use it.
+- **Spec 2 done (shipped pending Claude review).** Per-user permissions gating (fail-closed), third counter (registered clients), Complaints view, admin-approved client roster (view-only, poll 10s, expires), per-user header (+ watermark). Spec 1 (dark-luxury) approved 2026-09-12.
+- `--font-display` (Fraunces) still defined but unused — reserved for display moments.
 - Design standard: **refero-design** skill is the primary UI methodology for this repo (installed globally ~/.agents/skills/refero-design). Dark-luxury is a decided brand choice, not a default.
 
 ## Sources
@@ -64,5 +69,6 @@ All are SECURITY DEFINER except the two INVOKER `trg_compounds_*` triggers.
 - Spec 1 (premium dark-luxury redesign) from Claude via conversation.md + context/tasks, approved 2026-09-12.
 
 ## Changelog
+- **2026-09-12** — Spec 2 done (awaiting Claude §7 review). Added per-user `permissions` from `compound_claim_session` (AuthContext `normalizeUser`, fail-closed); third counter "registered clients" (`compound_clients_count`); permission-gated entry points (Complaints → `/complaints`, "See my clients" → roster modal); `ComplaintsPage` (clean dark list, status pills, priority red dot, Cairo dates, no text/name — status+date only); `useClientRoster` request→poll(10s)→view→expiry + `ClientRosterWindow` (view-only, plates mono, `access expires HH:MM`, request-again after expiry, `aria-live`); `screenshotDeterrence` util (user-select/contextmenu/beforeprint/blur-scrim, "deterrence only" comment) applied to roster + WatchPage; WatchPage bottom line → `display_name · HH:MM` live stamp; per-user identity in Dashboard header (hidden <sm); `/complaints` route behind ProtectedRoute + permission guard. Build + oxlint clean (same 5 pre-existing warnings). All data via the session-token RPCs only; zero download/export/print.
 - **2026-09-12** — Spec 1 done: full dark-luxury reskin (visual only, zero data/RPC changes). Replaced light ivory tokens with the dark token system (ink/surfaces/gold, mirrored in `@theme` + `:root`, `color-scheme: dark`); login now shows the real `/enaya-logo.png` with a barely-visible gold halo + "Compound Portal" caption (Shield icon + text wordmark removed); dashboard header now emblem+wordmark PNG logos, compound name+code, and Cairo clock + new Cairo date, with mobile-save degradation (<640px hide code+date); counters strip got a commented Spec-2 slot for the third counter; tiles are token dark cards with gold hover border + soft gold shadow; empty state = low-opacity emblem + spaced copy (no card box); loading = gold pulse dot + "Loading…"; WatchPage modals/toast/canvas moved to dark tokens, controls hover gold-soft. Favicon → `/favicon-256.png`, added `color-scheme`/`theme-color` metas. Build + oxlint clean; AuthContext/package.json untouched.
 - **2026-09-11** — Context created for the Compounds module (Task 8), accurate from live DB + portal code. Captured the two surfaces (portal + admin pages), the session-token auth model, the exact RPC set, and tables.

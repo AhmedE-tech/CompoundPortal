@@ -37,6 +37,22 @@ export function useAuth(): AuthContextValue {
   return ctx;
 }
 
+// Fail-closed: older sessions that omit `permissions` get all flags off.
+function normalizeUser(raw: Partial<UserInfo> | null | undefined): UserInfo | null {
+  if (!raw) return null;
+  return {
+    id: raw.id ?? '',
+    display_name: raw.display_name ?? '',
+    role_label: raw.role_label ?? null,
+    phone: raw.phone ?? null,
+    permissions: {
+      view_live: raw.permissions?.view_live ?? false,
+      view_complaints: raw.permissions?.view_complaints ?? false,
+      view_clients: raw.permissions?.view_clients ?? false,
+    },
+  };
+}
+
 function mapErrorType(error: unknown): string {
   const msg = error instanceof Error ? error.message : String(error);
   if (msg.includes('ALREADY_LOGGED_IN')) return 'ALREADY_LOGGED_IN';
@@ -193,7 +209,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           authenticated: true,
           sessionToken: data.session_token,
           compound: data.compound,
-          user: data.user,
+          user: normalizeUser(data.user),
           status: 'idle',
           error: null,
           loginErrorType: null,

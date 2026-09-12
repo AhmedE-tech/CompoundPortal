@@ -4,6 +4,7 @@ import AgoraRTC, { type IAgoraRTCClient, type ICameraVideoTrack, type IMicrophon
 import { X, RotateCw, Maximize, Minimize } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
+import { useScreenshotDeterrence, useWatermarkStamp } from '../utils/screenshotDeterrence';
 import type { StreamTokenLog, StreamTokenResponse } from '../types';
 
 function LiveDot() {
@@ -19,7 +20,7 @@ type PlayerState = 'loading' | 'streaming' | 'ended' | 'error';
 
 export default function WatchPage() {
   const { sessionId } = useParams<{ sessionId: string }>();
-  const { sessionToken, compound, forceLogout } = useAuth();
+  const { sessionToken, user, forceLogout } = useAuth();
   const navigate = useNavigate();
 
   const [playerState, setPlayerState] = useState<PlayerState>('loading');
@@ -28,6 +29,13 @@ export default function WatchPage() {
   const [elapsedMinutes, setElapsedMinutes] = useState(0);
   const [rotation, setRotation] = useState(0);
   const [fitMode, setFitMode] = useState<'contain' | 'cover'>('contain');
+
+  // Waste-conscience watermark timestamp (deterrence only, see utils)
+  const watermarkStamp = useWatermarkStamp();
+
+  // Per-user screenshot deterrence — additive DOM only
+  const pageRootRef = useRef<HTMLDivElement>(null);
+  const { paused, resume } = useScreenshotDeterrence(pageRootRef);
 
   // Inactivity modal
   const [showInactivityModal, setShowInactivityModal] = useState(false);
@@ -456,7 +464,7 @@ export default function WatchPage() {
   };
 
   return (
-    <div className="fixed inset-0 bg-ink">
+    <div ref={pageRootRef} className="fixed inset-0 bg-ink">
       {/* Video container — ALWAYS in DOM so Agora can play() into it during loading */}
       <div
         ref={videoContainerRef}
@@ -538,16 +546,27 @@ export default function WatchPage() {
         </button>
       </div>
 
-      {/* Overlay bottom bar */}
+      {/* Overlay bottom bar — per-user watermark (display_name + live Cairo time) */}
       <div
         className={`absolute bottom-0 left-0 right-0 px-6 py-3 bg-gradient-to-t from-black/70 to-transparent transition-opacity duration-300 ${
           overlayVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}
       >
         <span className="text-text-subtle text-[11px]">
-          Enaya Compound Portal — {compound?.name}
+          Enaya Compound Portal — {user?.display_name ?? 'Enaya'} · {watermarkStamp}
         </span>
       </div>
+
+      {/* Window-blur deterrence scrim (additive DOM only) */}
+      {paused && (
+        <button
+          onClick={resume}
+          className="absolute inset-0 z-40 flex items-center justify-center bg-ink text-text-muted text-[13px]"
+          aria-label="Resume watching"
+        >
+          Paused — click to resume
+        </button>
+      )}
 
       {/* Inactivity modal */}
       {showInactivityModal && (

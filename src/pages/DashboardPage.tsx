@@ -1,8 +1,10 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LogOut } from 'lucide-react';
+import { LogOut, MessageSquareWarning, Users } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
+import { useClientRoster } from '../hooks/useClientRoster';
+import ClientRosterWindow from '../components/ClientRosterWindow';
 import type { LiveSessionTile, LiveSessionsResponse } from '../types';
 
 function useCairoTime(): string {
@@ -95,13 +97,25 @@ const CONTAINER_STYLE: React.CSSProperties = {
 };
 
 export default function DashboardPage() {
-  const { sessionToken, compound, logout } = useAuth();
+  const { sessionToken, compound, user, logout } = useAuth();
   const navigate = useNavigate();
   const cairoTime = useCairoTime();
   const cairoDate = useCairoDate();
 
+  const canViewLive = user?.permissions.view_live ?? false;
+  const canViewComplaints = user?.permissions.view_complaints ?? false;
+  const canViewClients = user?.permissions.view_clients ?? false;
+  const userIdentity = user?.display_name
+    ? `${user.display_name}${user.role_label ? ` · ${user.role_label}` : ''}`
+    : '';
+  const hasSecondaryActions = canViewComplaints || canViewClients;
+
+  const roster = useClientRoster(sessionToken);
+  const [rosterOpen, setRosterOpen] = useState(false);
+
   const [tiles, setTiles] = useState<LiveSessionTile[]>([]);
   const [completedCount, setCompletedCount] = useState(0);
+  const [clientsCount, setClientsCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -115,6 +129,7 @@ export default function DashboardPage() {
       const response = data as LiveSessionsResponse;
       setTiles(response.tiles ?? []);
       setCompletedCount(response.todays_completed_count ?? 0);
+      setClientsCount(response.compound_clients_count ?? 0);
     } catch {
       // Silent fail — polling will retry
     } finally {
@@ -173,7 +188,7 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Right: Cairo date + clock, logout */}
+          {/* Right: Cairo date + clock, logged-in user, logout */}
           <div className="flex items-center gap-4 shrink-0">
             <div className="hidden sm:flex items-center gap-2">
               <span className="text-text-muted text-[12px] font-medium">{cairoDate}</span>
@@ -184,6 +199,11 @@ export default function DashboardPage() {
             <span className="text-text-main text-[12px] font-medium font-mono tabular-nums">
               {cairoTime}
             </span>
+            {userIdentity && (
+              <span className="hidden sm:inline text-text-muted text-[12px] font-medium truncate max-w-[160px]">
+                {userIdentity}
+              </span>
+            )}
             <button
               onClick={logout}
               className="flex items-center gap-1.5 text-text-muted text-[13px] hover:text-gold-soft transition-colors"
@@ -199,23 +219,60 @@ export default function DashboardPage() {
       <div className="w-full bg-surface-1 border-t border-border">
         <div
           style={CONTAINER_STYLE}
-          className="px-4 sm:px-8 h-10 flex justify-between items-center gap-6"
+          className="px-4 sm:px-8 py-2.5 flex flex-wrap items-center gap-x-6 gap-y-1.5"
         >
-          <div className="flex items-center gap-2">
+          <div className="flex items-baseline gap-2 basis-40 flex-1">
             <span className="text-[13px] font-semibold text-text-main tabular-nums">
               {liveCount}
             </span>
             <span className="text-[12px] text-text-muted">sessions in progress</span>
           </div>
-          {/* Spec 2 slot: third counter "registered clients" — no data wired yet */}
-          <div className="flex items-center gap-2">
-            <span className="text-[12px] text-text-muted">today's completed:</span>
+          <div className="flex items-baseline gap-2 basis-40 flex-1">
             <span className="text-[13px] font-semibold text-text-main tabular-nums">
               {completedCount}
             </span>
+            <span className="text-[12px] text-text-muted">today's completed</span>
+          </div>
+          <div className="flex items-baseline gap-2 basis-40 flex-1">
+            <span className="text-[13px] font-semibold text-text-main tabular-nums">
+              {clientsCount}
+            </span>
+            <span className="text-[12px] text-text-muted">registered clients</span>
           </div>
         </div>
       </div>
+
+      {/* Actions row — permission-gated entry points */}
+      {hasSecondaryActions && (
+        <div className="w-full bg-surface-1 border-t border-border">
+          <div
+            style={CONTAINER_STYLE}
+            className="px-4 sm:px-8 py-2.5 flex flex-wrap items-center gap-x-6 gap-y-1"
+          >
+            {canViewComplaints && (
+              <button
+                onClick={() => navigate('/complaints')}
+                className="flex items-center gap-1.5 text-gold-soft text-[12px] font-medium hover:text-text-main transition-colors"
+              >
+                <MessageSquareWarning size={14} />
+                Complaints
+              </button>
+            )}
+            {canViewClients && (
+              <button
+                onClick={() => {
+                  roster.open();
+                  setRosterOpen(true);
+                }}
+                className="flex items-center gap-1.5 text-gold-soft text-[12px] font-medium hover:text-text-main transition-colors"
+              >
+                <Users size={14} />
+                See my clients
+              </button>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Body */}
       {loading ? (
@@ -223,6 +280,27 @@ export default function DashboardPage() {
           <div className="flex items-center gap-3">
             <span className="w-3 h-3 rounded-full bg-gold animate-pulse-live" aria-hidden="true" />
             <span className="text-text-muted text-[13px]">Loading…</span>
+          </div>
+        </main>
+      ) : !canViewLive ? (
+        <main className="flex-1 flex items-center justify-center px-8">
+          <div className="flex flex-col items-center gap-4 text-center" role="status">
+            <img
+              src="/enaya-emblem.png"
+              alt=""
+              aria-hidden="true"
+              width="110"
+              height="64"
+              className="opacity-[0.15]"
+            />
+            <p className="text-text-muted text-[14px]">
+              Live viewing isn't enabled for your account — contact Enaya
+            </p>
+            {hasSecondaryActions && (
+              <p className="text-text-subtle text-[11px] uppercase tracking-[0.12em]">
+                complaints and the client roster are available above
+              </p>
+            )}
           </div>
         </main>
       ) : liveCount === 0 ? (
@@ -257,6 +335,17 @@ export default function DashboardPage() {
             ))}
           </div>
         </main>
+      )}
+
+      {/* Client roster modal — launched from "See my clients", not a route */}
+      {rosterOpen && (
+        <ClientRosterWindow
+          roster={roster}
+          onClose={() => {
+            roster.close();
+            setRosterOpen(false);
+          }}
+        />
       )}
     </div>
   );

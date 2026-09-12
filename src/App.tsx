@@ -1,9 +1,18 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider } from './contexts/AuthContext';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import WatchPage from './pages/WatchPage';
+import ComplaintsPage from './pages/ComplaintsPage';
+
+function ComplaintsRoute() {
+  const { user } = useAuth();
+  if (!user?.permissions.view_complaints) {
+    return <Navigate to="/dashboard" replace />;
+  }
+  return <ComplaintsPage />;
+}
 
 export default function App() {
   return (
@@ -24,6 +33,14 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <WatchPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/complaints"
+            element={
+              <ProtectedRoute>
+                <ComplaintsRoute />
               </ProtectedRoute>
             }
           />
