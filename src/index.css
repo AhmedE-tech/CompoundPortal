@@ -1,46 +1,68 @@
 @import "tailwindcss";
 
 @theme {
-  --color-ivory: #f5f0e8;
-  --color-white: #FFFFFF;
-  --color-panel: #F5F3EE;
+  /* Surfaces (dark, layered — NOT pure black) */
+  --color-ink: #0E0F12;          /* app background / canvas */
+  --color-surface-1: #16181D;    /* header, panels, tiles base */
+  --color-surface-2: #1E2127;    /* elevated: cards, modals, inputs */
+  --color-surface-3: #262A31;    /* hover of elevated */
 
-  --color-text-main: #1C1C1C;
-  --color-text-muted: #717171;
-  --color-text-secondary: #999;
+  /* Text on dark */
+  --color-text-main: #F3F1EC;    /* primary (warm off-white, not #fff) */
+  --color-text-muted: #A8A79F;   /* secondary */
+  --color-text-subtle: #6F6E68;  /* tertiary / metadata */
 
-  --color-gold: #C9A227;
-  --color-gold-light: #F4EEDF;
-  --color-gold-hover: #B8931F;
+  /* Gold accent — the ONLY brand accent. Use sparingly. */
+  --color-gold: #C9A227;         /* base gold (matches logo) */
+  --color-gold-soft: #E4C766;    /* highlight / light gold for text-on-dark */
+  --color-gold-hover: #D8B23A;   /* interactive hover */
+  --color-gold-tint: rgba(201,162,39,0.12); /* faint gold wash for active/selected */
 
-  --color-border: #E6E4DF;
-  --color-border-light: #F0EEEA;
-  --color-error: #DC3545;
-  --color-success: #0D9668;
+  /* Borders (low-contrast on dark) */
+  --color-border: rgba(243,241,236,0.08);
+  --color-border-strong: rgba(243,241,236,0.16);
+  --color-border-gold: rgba(201,162,39,0.45);
 
-  --color-live-red: #DC3545;
+  /* Semantic */
+  --color-live-red: #E5484D;     /* LIVE dot / errors keep red but slightly brighter for dark */
+  --color-error: #E5484D;
+  --color-success: #46A758;
+
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.4);
+  --shadow-md: 0 6px 24px rgba(0,0,0,0.45);
+  --shadow-gold: 0 0 0 1px rgba(201,162,39,0.35), 0 8px 30px rgba(201,162,39,0.10);
 
   --font-body: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-display: "Fraunces", Georgia, serif;   /* for the few luxury display moments */
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
 }
 
 :root {
-  --color-bg-ivory: #f5f0e8;
-  --color-bg-white: #FFFFFF;
-  --color-bg-panel: #F5F3EE;
-  --color-text-main: #1C1C1C;
-  --color-text-muted: #717171;
-  --color-text-secondary: #999;
+  color-scheme: dark;
+
+  /* Mirror for inline-style consumers (LoginPage) — purpose-named */
+  --color-bg-ink: #0E0F12;
+  --color-bg-surface-1: #16181D;
+  --color-bg-surface-2: #1E2127;
+  --color-bg-surface-3: #262A31;
+  --color-text-main: #F3F1EC;
+  --color-text-muted: #A8A79F;
+  --color-text-subtle: #6F6E68;
   --color-gold-accent: #C9A227;
-  --color-gold-hover: #B8931F;
-  --color-border: #E6E4DF;
-  --color-border-light: #F0EEEA;
-  --color-error: #DC3545;
-  --color-success: #0D9668;
-  --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
-  --shadow-md: 0 2px 8px rgba(0,0,0,0.06);
-  --radius-sm: 6px;
-  --radius-md: 8px;
-  --radius-lg: 10px;
+  --color-gold-soft: #E4C766;
+  --color-gold-hover: #D8B23A;
+  --color-gold-tint: rgba(201,162,39,0.12);
+  --color-border: rgba(243,241,236,0.08);
+  --color-border-strong: rgba(243,241,236,0.16);
+  --color-error: #E5484D;
+  --color-success: #46A758;
+
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.4);
+  --shadow-md: 0 6px 24px rgba(0,0,0,0.45);
+  --shadow-gold: 0 0 0 1px rgba(201,162,39,0.35), 0 8px 30px rgba(201,162,39,0.10);
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
 }
 
 * {
@@ -57,7 +79,7 @@ html, body, #root {
 body {
   font-family: var(--font-body);
   font-size: 13px;
-  background-color: var(--color-bg-ivory);
+  background-color: var(--color-bg-ink);
   color: var(--color-text-main);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -74,6 +96,11 @@ button {
 a {
   color: inherit;
   text-decoration: none;
+}
+
+/* Form placeholder on dark */
+.form-input::placeholder {
+  color: var(--color-text-subtle);
 }
 
 /* Focus ring */
@@ -104,9 +131,9 @@ a {
   width: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: var(--color-bg-ivory);
+  background: var(--color-bg-ink);
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--color-border);
+  background: var(--color-border-strong);
   border-radius: 3px;
 }

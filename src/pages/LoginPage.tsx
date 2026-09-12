@@ -1,6 +1,5 @@
 import { useState, type FormEvent } from 'react';
 import { useLocation } from 'react-router-dom';
-import { Shield } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 export default function LoginPage() {
@@ -24,14 +23,14 @@ export default function LoginPage() {
         alignItems: 'center',
         justifyContent: 'center',
         minHeight: '100vh',
-        backgroundColor: 'var(--color-bg-ivory)',
+        backgroundColor: 'var(--color-bg-ink)',
         padding: '16px',
       }}
     >
-      <div style={{ width: '100%', maxWidth: '380px' }}>
+      <div style={{ width: '100%', maxWidth: '400px' }}>
         <div
           style={{
-            background: 'var(--color-bg-white)',
+            background: 'var(--color-bg-surface-1)',
             padding: '36px',
             borderRadius: 'var(--radius-lg)',
             boxShadow: 'var(--shadow-md)',
@@ -39,36 +38,43 @@ export default function LoginPage() {
             border: '1px solid var(--color-border)',
           }}
         >
-          {/* Shield icon */}
-          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
-            <div
-              style={{
-                background: 'var(--color-bg-panel)',
-                padding: '14px',
-                borderRadius: '50%',
-              }}
-            >
-              <Shield size={28} color="var(--color-gold-accent)" />
-            </div>
-          </div>
-
-          {/* Title */}
-          <h1
+          {/* Logo — the real gold Enaya mark, with a barely-visible gold halo (decorative only) */}
+          <div
             style={{
-              textAlign: 'center',
-              fontSize: '1.35rem',
-              marginBottom: '6px',
-              color: 'var(--color-text-main)',
+              display: 'flex',
+              justifyContent: 'center',
+              marginBottom: '22px',
+              position: 'relative',
             }}
           >
-            Enaya
-          </h1>
+            <div
+              aria-hidden="true"
+              style={{
+                position: 'absolute',
+                inset: -24,
+                background:
+                  'radial-gradient(closest-side, rgba(201,162,39,0.10), transparent)',
+              }}
+            />
+            <img
+              src="/enaya-logo.png"
+              alt="Enaya"
+              width="180"
+              height="115"
+              style={{ height: 'auto', position: 'relative', display: 'block' }}
+            />
+          </div>
+
+          {/* Caption */}
           <p
             style={{
               textAlign: 'center',
               color: 'var(--color-text-muted)',
               marginBottom: '28px',
-              fontSize: '12.5px',
+              fontSize: '11px',
+              fontWeight: 500,
+              textTransform: 'uppercase',
+              letterSpacing: '0.12em',
             }}
           >
             Compound Portal
@@ -80,8 +86,8 @@ export default function LoginPage() {
               style={{
                 marginBottom: '16px',
                 padding: '12px',
-                background: 'rgba(220, 53, 69, 0.1)',
-                border: '1px solid rgba(220, 53, 69, 0.2)',
+                background: 'rgba(229, 72, 77, 0.12)',
+                border: '1px solid rgba(229, 72, 77, 0.22)',
                 color: 'var(--color-error)',
                 fontSize: '12px',
                 borderRadius: 'var(--radius-sm)',
@@ -162,18 +168,22 @@ export default function LoginPage() {
                     border: '1px solid var(--color-border)',
                     fontFamily: 'inherit',
                     fontSize: '13px',
-                    background: 'var(--color-bg-white)',
+                    background: 'var(--color-bg-surface-2)',
                     color: 'var(--color-text-main)',
                     outline: 'none',
-                    transition: 'border-color 0.15s',
+                    transition: 'border-color 0.15s, box-shadow 0.15s',
                   }}
                   placeholder="you@compound.com"
                   disabled={status === 'loading'}
                   onFocus={(e) => {
-                    (e.target as HTMLInputElement).style.borderColor = 'var(--color-gold-accent)';
+                    const el = e.target as HTMLInputElement;
+                    el.style.borderColor = 'var(--color-gold-accent)';
+                    el.style.boxShadow = '0 0 0 3px var(--color-gold-tint)';
                   }}
                   onBlur={(e) => {
-                    (e.target as HTMLInputElement).style.borderColor = 'var(--color-border)';
+                    const el = e.target as HTMLInputElement;
+                    el.style.borderColor = 'var(--color-border)';
+                    el.style.boxShadow = 'none';
                   }}
                 />
               </div>
@@ -208,18 +218,22 @@ export default function LoginPage() {
                     border: '1px solid var(--color-border)',
                     fontFamily: 'inherit',
                     fontSize: '13px',
-                    background: 'var(--color-bg-white)',
+                    background: 'var(--color-bg-surface-2)',
                     color: 'var(--color-text-main)',
                     outline: 'none',
-                    transition: 'border-color 0.15s',
+                    transition: 'border-color 0.15s, box-shadow 0.15s',
                   }}
                   placeholder="••••••••"
                   disabled={status === 'loading'}
                   onFocus={(e) => {
-                    (e.target as HTMLInputElement).style.borderColor = 'var(--color-gold-accent)';
+                    const el = e.target as HTMLInputElement;
+                    el.style.borderColor = 'var(--color-gold-accent)';
+                    el.style.boxShadow = '0 0 0 3px var(--color-gold-tint)';
                   }}
                   onBlur={(e) => {
-                    (e.target as HTMLInputElement).style.borderColor = 'var(--color-border)';
+                    const el = e.target as HTMLInputElement;
+                    el.style.borderColor = 'var(--color-border)';
+                    el.style.boxShadow = 'none';
                   }}
                 />
               </div>
@@ -246,7 +260,7 @@ export default function LoginPage() {
                   width: '100%',
                   padding: '10px',
                   backgroundColor: 'var(--color-gold-accent)',
-                  color: 'white',
+                  color: '#0E0F12',
                   borderRadius: 'var(--radius-sm)',
                   fontWeight: 600,
                   fontSize: '13px',
@@ -275,7 +289,7 @@ export default function LoginPage() {
           style={{
             textAlign: 'center',
             fontSize: '12px',
-            color: 'var(--color-text-muted)',
+            color: 'var(--color-text-subtle)',
             marginTop: '24px',
           }}
         >

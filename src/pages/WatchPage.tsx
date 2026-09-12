@@ -456,7 +456,7 @@ export default function WatchPage() {
   };
 
   return (
-    <div className="fixed inset-0 bg-[#1C1C1C]">
+    <div className="fixed inset-0 bg-ink">
       {/* Video container — ALWAYS in DOM so Agora can play() into it during loading */}
       <div
         ref={videoContainerRef}
@@ -471,22 +471,22 @@ export default function WatchPage() {
 
       {/* Loading overlay — rendered ON TOP of the video container */}
       {playerState === 'loading' && (
-        <div className="absolute inset-0 z-10 bg-[#1C1C1C] flex items-center justify-center">
+        <div className="absolute inset-0 z-10 bg-ink flex items-center justify-center">
           <div className="flex flex-col items-center gap-3">
             <span className="w-3 h-3 rounded-full bg-gold animate-pulse-live" />
-            <span className="text-white/90 text-[13px]">Connecting to live stream...</span>
+            <span className="text-text-main text-[13px]">Connecting to live stream…</span>
           </div>
         </div>
       )}
 
       {/* Error/ended overlay — rendered ON TOP of the video container */}
       {(playerState === 'ended' || playerState === 'error') && (
-        <div className="absolute inset-0 z-10 bg-[#1C1C1C] flex items-center justify-center">
+        <div className="absolute inset-0 z-10 bg-ink flex items-center justify-center">
           <div className="text-center">
-            <p className="text-white/90 text-[15px] font-medium mb-6">{errorMessage}</p>
+            <p className="text-text-main text-[15px] font-medium mb-6">{errorMessage}</p>
             <button
               onClick={() => navigate('/dashboard')}
-              className="px-6 py-2.5 bg-gold text-white text-[13px] font-semibold rounded-[6px] hover:bg-gold-hover transition-colors"
+              className="px-6 py-2.5 bg-gold text-ink text-[13px] font-semibold rounded-[6px] hover:bg-gold-hover transition-colors"
             >
               Back to dashboard
             </button>
@@ -512,7 +512,7 @@ export default function WatchPage() {
         <div className="flex items-center gap-2">
           <button
             onClick={handleRotate}
-            className="w-8 h-8 flex items-center justify-center rounded bg-white/10 hover:bg-white/20 text-white transition-colors"
+            className="w-8 h-8 flex items-center justify-center rounded bg-white/10 hover:bg-white/20 text-white hover:text-gold-soft transition-colors"
             aria-label="Rotate video"
             title="Rotate 90°"
           >
@@ -520,7 +520,7 @@ export default function WatchPage() {
           </button>
           <button
             onClick={() => setFitMode((prev) => (prev === 'contain' ? 'cover' : 'contain'))}
-            className="h-8 px-3 flex items-center gap-1.5 rounded bg-white/10 hover:bg-white/20 text-white text-[11px] transition-colors"
+            className="h-8 px-3 flex items-center gap-1.5 rounded bg-white/10 hover:bg-white/20 text-white hover:text-gold-soft text-[11px] transition-colors"
             aria-label="Toggle video fit"
             title={fitMode === 'contain' ? 'Fill viewport' : 'Fit to screen'}
           >
@@ -531,7 +531,7 @@ export default function WatchPage() {
 
         <button
           onClick={() => navigateToDashboard('user_close')}
-          className="w-10 h-10 flex items-center justify-center text-white hover:text-gold transition-colors"
+          className="w-10 h-10 flex items-center justify-center text-white hover:text-gold-soft transition-colors"
           aria-label="Close"
         >
           <X size={20} />
@@ -544,7 +544,7 @@ export default function WatchPage() {
           overlayVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}
       >
-        <span className="text-white/50 text-[11px]">
+        <span className="text-text-subtle text-[11px]">
           Enaya Compound Portal — {compound?.name}
         </span>
       </div>
@@ -552,11 +552,11 @@ export default function WatchPage() {
       {/* Inactivity modal */}
       {showInactivityModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80">
-          <div className="bg-white p-8 rounded-[10px] text-center max-w-sm shadow-lg">
+          <div className="bg-surface-2 p-8 rounded-[var(--radius-md)] text-center max-w-sm shadow-md border border-border">
             <p className="text-text-main text-[15px] font-semibold mb-4">Still watching?</p>
             <button
               onClick={handleContinueWatching}
-              className="px-6 py-2.5 bg-gold text-white text-[13px] font-semibold rounded-[6px] hover:bg-gold-hover transition-colors"
+              className="px-6 py-2.5 bg-gold text-ink text-[13px] font-semibold rounded-[6px] hover:bg-gold-hover transition-colors"
             >
               Continue watching
             </button>
@@ -566,19 +566,19 @@ export default function WatchPage() {
 
       {/* Hard cap toast */}
       {showHardCapToast && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-white px-6 py-4 rounded-[8px] flex items-center gap-4 shadow-lg border border-border">
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-surface-2 px-6 py-4 rounded-[var(--radius-md)] flex items-center gap-4 shadow-md border border-border">
           <span className="text-text-main text-[13px]">
             Session will disconnect in {hardCapCountdown}s.
           </span>
           <button
             onClick={handleKeepWatching}
-            className="px-4 py-1.5 bg-gold text-white text-[12px] font-semibold rounded-[6px] hover:bg-gold-hover transition-colors"
+            className="px-4 py-1.5 bg-gold text-ink text-[12px] font-semibold rounded-[6px] hover:bg-gold-hover transition-colors"
           >
             Keep watching
           </button>
           <button
             onClick={() => navigateToDashboard('hard_cap')}
-            className="text-text-muted text-[12px] hover:text-text-main transition-colors"
+            className="text-text-muted text-[12px] hover:text-gold-soft transition-colors"
           >
             Close
           </button>

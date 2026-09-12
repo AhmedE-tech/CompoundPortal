@@ -34,6 +34,19 @@ function useCairoTime(): string {
   return time;
 }
 
+function useCairoDate(): string {
+  const [date] = useState(() =>
+    new Date().toLocaleDateString('en-GB', {
+      timeZone: 'Africa/Cairo',
+      weekday: 'short',
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    }),
+  );
+  return date;
+}
+
 function LiveDot() {
   return (
     <span className="inline-flex items-center gap-1.5">
@@ -47,7 +60,7 @@ function SessionTile({ tile, onClick }: { tile: LiveSessionTile; onClick: () => 
   return (
     <button
       onClick={onClick}
-      className="group relative aspect-video bg-[#1C1C1C] rounded-[8px] border-2 border-transparent hover:border-gold transition-colors cursor-pointer overflow-hidden shadow-sm"
+      className="group relative aspect-video bg-surface-2 rounded-[var(--radius-md)] border border-border hover:border-gold hover:shadow-gold transition cursor-pointer overflow-hidden"
     >
       {/* Top left: live indicator */}
       <div className="absolute top-3 left-3">
@@ -56,17 +69,17 @@ function SessionTile({ tile, onClick }: { tile: LiveSessionTile; onClick: () => 
 
       {/* Center: watch prompt (hover) */}
       <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-        <span className="text-white/90 text-[13px] font-medium">Watch</span>
+        <span className="text-gold-soft text-[13px] font-medium tracking-wide">Watch</span>
       </div>
 
       {/* Bottom left: session label */}
       <div className="absolute bottom-3 left-3">
-        <span className="text-white text-[13px] font-medium">{tile.display_label}</span>
+        <span className="text-text-main text-[13px] font-medium">{tile.display_label}</span>
       </div>
 
       {/* Bottom right: elapsed time */}
       <div className="absolute bottom-3 right-3">
-        <span className="text-white/70 text-[12px]">{tile.started_ago_minutes}m</span>
+        <span className="text-text-muted text-[12px] font-mono tabular-nums">{tile.started_ago_minutes}m</span>
       </div>
     </button>
   );
@@ -85,6 +98,7 @@ export default function DashboardPage() {
   const { sessionToken, compound, logout } = useAuth();
   const navigate = useNavigate();
   const cairoTime = useCairoTime();
+  const cairoDate = useCairoDate();
 
   const [tiles, setTiles] = useState<LiveSessionTile[]>([]);
   const [completedCount, setCompletedCount] = useState(0);
@@ -129,24 +143,50 @@ export default function DashboardPage() {
   const liveCount = tiles.length;
 
   return (
-    <div className="min-h-screen bg-ivory flex flex-col">
+    <div className="min-h-screen bg-ink flex flex-col">
       {/* Header — full-width background, content constrained via inline style */}
-      <header className="sticky top-0 z-10 w-full border-b border-border bg-ivory">
-        <div style={CONTAINER_STYLE} className="px-8 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-3">
-            <span className="text-gold text-[15px] font-bold tracking-wide">Enaya</span>
-            <span className="text-border">│</span>
-            <div className="flex items-baseline gap-2">
-              <span className="text-text-main text-[14px] font-medium">{compound?.name}</span>
-              <span className="text-text-muted text-[11px] font-mono">{compound?.code}</span>
+      <header className="sticky top-0 z-10 w-full border-b border-border bg-surface-1">
+        <div
+          style={CONTAINER_STYLE}
+          className="px-4 sm:px-8 py-4 flex items-center justify-between gap-4"
+        >
+          {/* Left: emblem + wordmark logo, divider, compound identity */}
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="flex items-center gap-2.5 shrink-0">
+              <img src="/enaya-emblem.png" alt="Enaya" width="48" height="28" />
+              <img
+                src="/enaya-wordmark.png"
+                alt="Enaya"
+                width="64"
+                height="18"
+                className="hidden min-[400px]:block"
+              />
+            </div>
+            <span className="w-px h-5 bg-border-strong shrink-0" aria-hidden="true" />
+            <div className="flex items-baseline gap-2 min-w-0">
+              <span className="text-text-main text-[14px] font-medium truncate">
+                {compound?.name}
+              </span>
+              <span className="hidden sm:inline text-text-subtle text-[11px] font-mono tracking-wide">
+                {compound?.code}
+              </span>
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
-            <span className="text-text-muted text-[12px] font-medium font-mono">{cairoTime}</span>
+          {/* Right: Cairo date + clock, logout */}
+          <div className="flex items-center gap-4 shrink-0">
+            <div className="hidden sm:flex items-center gap-2">
+              <span className="text-text-muted text-[12px] font-medium">{cairoDate}</span>
+              <span className="text-border-strong" aria-hidden="true">
+                ·
+              </span>
+            </div>
+            <span className="text-text-main text-[12px] font-medium font-mono tabular-nums">
+              {cairoTime}
+            </span>
             <button
               onClick={logout}
-              className="flex items-center gap-1.5 text-text-muted text-[13px] hover:text-text-main transition-colors"
+              className="flex items-center gap-1.5 text-text-muted text-[13px] hover:text-gold-soft transition-colors"
             >
               <LogOut size={14} />
               Logout
@@ -155,16 +195,24 @@ export default function DashboardPage() {
         </div>
       </header>
 
-      {/* Top strip — full-width tinted background, content constrained */}
-      <div className="w-full bg-[#F0EAD6]">
-        <div style={CONTAINER_STYLE} className="px-8 h-10 flex justify-between items-center">
+      {/* Top strip — counters */}
+      <div className="w-full bg-surface-1 border-t border-border">
+        <div
+          style={CONTAINER_STYLE}
+          className="px-4 sm:px-8 h-10 flex justify-between items-center gap-6"
+        >
           <div className="flex items-center gap-2">
-            <span className="text-[13px] font-semibold text-text-main">{liveCount}</span>
+            <span className="text-[13px] font-semibold text-text-main tabular-nums">
+              {liveCount}
+            </span>
             <span className="text-[12px] text-text-muted">sessions in progress</span>
           </div>
+          {/* Spec 2 slot: third counter "registered clients" — no data wired yet */}
           <div className="flex items-center gap-2">
             <span className="text-[12px] text-text-muted">today's completed:</span>
-            <span className="text-[13px] font-semibold text-text-main">{completedCount}</span>
+            <span className="text-[13px] font-semibold text-text-main tabular-nums">
+              {completedCount}
+            </span>
           </div>
         </div>
       </div>
@@ -172,24 +220,30 @@ export default function DashboardPage() {
       {/* Body */}
       {loading ? (
         <main className="flex-1 flex items-center justify-center px-8">
-          <span className="text-text-muted text-[13px]">Loading...</span>
+          <div className="flex items-center gap-3">
+            <span className="w-3 h-3 rounded-full bg-gold animate-pulse-live" aria-hidden="true" />
+            <span className="text-text-muted text-[13px]">Loading…</span>
+          </div>
         </main>
       ) : liveCount === 0 ? (
         <main className="flex-1 flex items-center justify-center px-8">
-          <div
-            className="w-full border border-border p-16 text-center"
-            style={{ maxWidth: '28rem' }}
-            role="status"
-          >
-            <div className="text-8xl font-mono text-border">0</div>
-            <div className="text-sm text-text-muted mt-4">no sessions in progress right now</div>
-            <div className="text-xs text-text-muted mt-8 tracking-wider uppercase">
+          <div className="flex flex-col items-center gap-4 text-center" role="status">
+            <img
+              src="/enaya-emblem.png"
+              alt=""
+              aria-hidden="true"
+              width="110"
+              height="64"
+              className="opacity-[0.15]"
+            />
+            <p className="text-text-muted text-[14px]">No active wash sessions right now</p>
+            <p className="text-text-subtle text-[11px] uppercase tracking-[0.12em]">
               the page will refresh automatically
-            </div>
+            </p>
           </div>
         </main>
       ) : (
-        <main className="flex-1 px-8 py-12">
+        <main className="flex-1 px-4 sm:px-8 py-12">
           <div
             style={CONTAINER_STYLE}
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"

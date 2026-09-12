@@ -18,8 +18,10 @@
 
 ## 2. Portal structure (small & focused)
 - `lib/supabase.ts` — client. `contexts/AuthContext.tsx` — the session-token auth (see §4). `components/ProtectedRoute.tsx`.
-- `pages/`: **LoginPage**, **DashboardPage** (live sessions list), **WatchPage** (Agora live viewer — 21KB, the core).
+- `pages/`: **LoginPage**, **DashboardPage** (live sessions list), **WatchPage** (Agora live viewer — the core).
 - `utils/fingerprint.ts` — device fingerprint for session claiming. `types/index.ts`.
+- **Theme (since Spec 1, 2026-09-12):** committed dark-luxury system in `src/index.css` — tokens live in BOTH the Tailwind v4 `@theme` block (utilities like `bg-ink`, `text-gold-soft`, `shadow-gold`) AND the `:root` CSS vars (LoginPage inline styles). One accent: gold (`#C9A227`; `gold-soft #E4C766` for gold **text** on dark). Surfaces layered ink → surface-1 → surface-2 → surface-3. Fonts: Inter (body), Fraunces (display, defined but unused so far), JetBrains Mono.
+- **Logo assets in `public/`** (real PNGs, no CSS/SVG redraw): `enaya-logo.png` (full stacked, login), `enaya-emblem.png` (248×144 hand emblem, header + empty state), `enaya-wordmark.png` (480×135), `favicon-256.png`. Header serves emblem at 48×28 + wordmark at 64×18 (2×-safe, explicit width/height to avoid CLS).
 
 ## 3. Database — tables
 `compounds`, `compound_users`, `compound_active_sessions`, `compound_stream_access_logs`, `compound_activity_logs`, `customer_compound_history`. Plus signup helpers that assign a customer to a compound.
@@ -54,9 +56,13 @@ All are SECURITY DEFINER except the two INVOKER `trg_compounds_*` triggers.
 ## 7. Open items
 - context.md ~80% — deepen WatchPage/Agora flow as we work.
 - No AGENTS.md in the portal repo yet — global OpenCode skill applies.
+- **Spec 1 done, Spec 2 pending approval.** Spec 2 (`context/tasks/02-aeon-feature-expansion.md`) adds: per-user permissions gating, third counter (registered clients) — slot already commented in Dashboard counters strip, Complaints tab (status+date only), client roster behind admin approval, per-user header + watermark. `--font-display` (Fraunces) defined but unused — Spec 2's display moments may use it.
+- Design standard: **refero-design** skill is the primary UI methodology for this repo (installed globally ~/.agents/skills/refero-design). Dark-luxury is a decided brand choice, not a default.
 
 ## Sources
 - Live DB via Supabase MCP (exact compound RPC list), 2026-09-11. Portal repo: package.json, README, src tree.
+- Spec 1 (premium dark-luxury redesign) from Claude via conversation.md + context/tasks, approved 2026-09-12.
 
 ## Changelog
+- **2026-09-12** — Spec 1 done: full dark-luxury reskin (visual only, zero data/RPC changes). Replaced light ivory tokens with the dark token system (ink/surfaces/gold, mirrored in `@theme` + `:root`, `color-scheme: dark`); login now shows the real `/enaya-logo.png` with a barely-visible gold halo + "Compound Portal" caption (Shield icon + text wordmark removed); dashboard header now emblem+wordmark PNG logos, compound name+code, and Cairo clock + new Cairo date, with mobile-save degradation (<640px hide code+date); counters strip got a commented Spec-2 slot for the third counter; tiles are token dark cards with gold hover border + soft gold shadow; empty state = low-opacity emblem + spaced copy (no card box); loading = gold pulse dot + "Loading…"; WatchPage modals/toast/canvas moved to dark tokens, controls hover gold-soft. Favicon → `/favicon-256.png`, added `color-scheme`/`theme-color` metas. Build + oxlint clean; AuthContext/package.json untouched.
 - **2026-09-11** — Context created for the Compounds module (Task 8), accurate from live DB + portal code. Captured the two surfaces (portal + admin pages), the session-token auth model, the exact RPC set, and tables.
